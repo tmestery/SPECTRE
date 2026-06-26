@@ -15,7 +15,7 @@ class VulnHunterAgent:
     max_iterations = 1
 
     async def run(self, ctx: AgentContext, bus: FindingsBus, engagement=None, **deps) -> AgentResult:
-        workspace = self._resolve_workspace(ctx, engagement)
+        workspace = await self._ensure_workspace(ctx, bus, engagement)
         if workspace is None:
             await bus.publish(
                 BusEvent.agent_message(
@@ -141,4 +141,38 @@ class VulnHunterAgent:
         path = ctx.workspace_path or (engagement.workspace_path if engagement else None)
         if path and Path(path).exists():
             return Path(path)
+        return None
+
+    async def _ensure_workspace(self, ctx: AgentContext, bus: FindingsBus, engagement) -> Path | None:
+        workspace = self._resolve_workspace(ctx, engagement)
+        if workspace is not None:
+            return workspace
+
+        if engagement is None:
+            return None
+
+        import httpx
+
+        from spectre.safety.scope import ScopeEnforcer
+        from spectre.tools.github import GitHubClient
+
+        enforcer = ScopeEnforcer(ctx.scope)
+        github = GitHubClient(bus, ctx.session_id, enforcer)
+        try:
+            await bus.publish(
+                BusEvent.agent_message(
+                    ctx.session_id,
+                    self.id,
+                    f"No workspace from Recon; cloning {ctx.repo} for secret and CVE scans.",
+                )
+            )
+            inventory = await github.inventory_repo(ctx.repo, ctx.branch)
+            if inventory.clone_path:
+                engagement.workspace_path = str(inventory.clone_path)
+                ctx.workspace_path = engagement.workspace_path
+                return inventory.clone_path
+        except httpx.HTTPError:
+            return None
+        finally:
+            await github.close()
         return None

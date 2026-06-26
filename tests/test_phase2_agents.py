@@ -7,6 +7,7 @@ from spectre.bus.store import FindingsBus
 from spectre.schemas.events import BusEvent
 from spectre.schemas.finding import Finding, FindingType, Severity
 from spectre.schemas.scope import RepoScope
+from spectre.tools.github import GitHubClient
 
 
 @pytest.fixture
@@ -112,3 +113,35 @@ async def test_exploiter_no_findings_exhausts(bus):
     ctx.agent_id = "exploiter"
     result = await agent.run(ctx, bus)
     assert result.status.value == "exhausted"
+
+
+@pytest.mark.asyncio
+async def test_vuln_hunter_bootstraps_workspace_when_missing(tmp_path, bus, monkeypatch):
+    workspace = tmp_path / "clone"
+    workspace.mkdir()
+
+    async def fake_inventory(self, repo, branch):
+        from spectre.tools.github import RepoInventory
+
+        return RepoInventory(
+            repo=repo,
+            branch=branch,
+            default_branch=branch,
+            clone_path=workspace,
+        )
+
+    monkeypatch.setattr(
+        GitHubClient,
+        "inventory_repo",
+        fake_inventory,
+    )
+
+    class FakeEngagement:
+        workspace_path = None
+
+    engagement = FakeEngagement()
+    agent = VulnHunterAgent()
+    result = await agent.run(_ctx(""), bus, engagement=engagement)
+
+    assert result.status.value == "complete"
+    assert engagement.workspace_path == str(workspace)

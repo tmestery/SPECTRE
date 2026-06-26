@@ -52,7 +52,7 @@ class StubAgent(BaseAgent):
             BusEvent.agent_message(
                 ctx.session_id,
                 self.id,
-                f"{self.label} is not implemented yet (Phase 2+). Completing handoff chain.",
+                f"{self.label} is not implemented yet (Phase 3). Completing handoff chain.",
             )
         )
         return AgentResult(status=AgentResultStatus.EXHAUSTED, message=f"{self.id} stub complete")
