@@ -1,18 +1,32 @@
 # SPECTRE
 
-**S**elf-coordinating **P**enetration and **E**xploit **C**rew for **T**hreat **R**esearch and **E**xposure — a multi-agent system that collaboratively audits **authorized GitHub repositories** for secrets, vulnerable dependencies, and misconfigurations.
+**S**elf-coordinating **P**enetration and **E**xploit **C**rew for **T**hreat **R**esearch and **E**xposure — multi-agent GitHub repository security auditing.
 
 ## Quick start
 
-> Scaffold not yet implemented. See [docs/local/local-plan-roadmap.md](docs/local/local-plan-roadmap.md) for build phases.
-
 ```bash
-# Phase 0 (planned)
-cp .env.example .env          # GROQ_API_KEY + GITHUB_TOKEN
-npm install && npm run dev    # demo UI
+# Python
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+
+# UI (optional)
+npm install
+
+# Configure
+cp .env.example .env
+# Set GITHUB_TOKEN (optional for public repos) and GROQ_API_KEY (Phase 2+)
+
+# Run Phase 1 audit
 python -m spectre.cli run \
-  --repo owner/repo \
-  --scope scopes/my-repo.yaml
+  --repo tmestery/SPECTRE \
+  --scope scopes/spectre.yaml \
+  --branch chore/1-phase-0-docs-scaffold
+
+# Tests
+pytest
+npm test
+npm run dev
 ```
 
-See [AGENTS.md](AGENTS.md) and [docs/local/](docs/local/) for architecture, agent design, and workflows.
+See [AGENTS.md](AGENTS.md) and [docs/local/](docs/local/) for architecture and workflows.
