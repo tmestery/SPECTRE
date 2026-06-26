@@ -13,33 +13,34 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Open http://localhost:8080. Paste the `session_id` from the container logs, or use `?session=<id>` in the URL. See [docs/local/local-dev-docker.md](docs/local/local-dev-docker.md).
+Open http://localhost:8080 and click **Start audit**. See [docs/local/local-dev-docker.md](docs/local/local-dev-docker.md).
 
 ### Local development
 
 ```bash
-# Python
+# Terminal 1 — control server
+python -m spectre.cli serve
+
+# Terminal 2 — UI
+npm install
+npm run dev
+```
+
+Open http://localhost:5173 and click **Start audit**.
+
+```bash
+# Python setup
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
 
-# UI (optional)
-npm install
-
 # Configure
 cp .env.example .env
-# Set GITHUB_TOKEN (optional for public repos) and GROQ_API_KEY (Phase 2+)
-
-# Run Phase 1 audit
-python -m spectre.cli run \
-  --repo tmestery/SPECTRE \
-  --scope scopes/spectre.yaml \
-  --branch chore/1-phase-0-docs-scaffold
+# Set GITHUB_TOKEN and GROQ_API_KEY
 
 # Tests
 pytest
 npm test
-npm run dev
 ```
 
 See [AGENTS.md](AGENTS.md) and [docs/local/](docs/local/) for architecture and workflows.

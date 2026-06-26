@@ -29,6 +29,7 @@ def test_dockerfile_declares_runtime_tools():
     dockerfile = Path("Dockerfile").read_text(encoding="utf-8")
     assert "gitleaks" in dockerfile
     assert "osv-scanner" in dockerfile
+    assert "AS cli" in dockerfile
 
 
 def test_docker_entrypoint_is_executable():

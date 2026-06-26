@@ -2,69 +2,79 @@
 
 **Status:** active
 **Updated:** 2026-06-25
-**Related:** `Dockerfile`, `docker-compose.yml`, `docker/entrypoint.sh`, issue docker-compose
+**Related:** `Dockerfile`, `docker-compose.yml`, `spectre/server/control.py`, `spectre/cli.py serve`
 
 ## Summary
 
-Run the full SPECTRE demo stack — orchestrator, WebSocket stream, and dashboard UI — with a single `docker compose up` command. Scanning tools (`gitleaks`, `osv-scanner`, `git`) are baked into the image.
+Run the SPECTRE demo stack — control server, WebSocket stream, and dashboard UI — with a single `docker compose up`. Start audits from the UI; no CLI session handoff required.
 
 ## Context
 
-Local development previously required two terminals: one for `python -m spectre.cli run --ws` and one for `npm run dev`. Docker Compose bundles nginx (static UI), the Python crew, and tool binaries so demos are repeatable without local Node/Python installs.
+Docker Compose bundles nginx (static UI), a long-running WebSocket control server (`spectre serve`), and scanning tools (`gitleaks`, `osv-scanner`, `git`). The UI connects on load and sends `start_engagement` over WebSocket.
 
 ## Implementation
 
 | Path | Role |
 |------|------|
-| `Dockerfile` | Multi-stage build: Vite UI → static assets; Python 3.12 runtime + scanners |
-| `docker-compose.yml` | `spectre` demo service; optional `cli` profile for report/halt |
-| `docker/entrypoint.sh` | Starts nginx on port 8080, then runs engagement with `--ws` |
-| `docker/nginx.conf` | Serves built UI with SPA fallback |
-| `spectre/config.py` | `WS_HOST` (default `127.0.0.1`; set `0.0.0.0` in containers) |
+| `Dockerfile` | Multi-stage build: UI + `runtime` demo image + slim `cli` image |
+| `docker-compose.yml` | `spectre` demo service; optional `cli` profile for report/halt/sessions |
+| `docker/entrypoint.sh` | nginx on 8080 + `spectre serve` |
+| `spectre/server/control.py` | WebSocket control plane: start, subscribe, halt, list sessions |
+| `spectre/cli.py serve` | Long-running control server for UI and Docker |
 
 ### Ports
 
 | Port | Service |
 |------|---------|
 | 8080 | Demo dashboard (nginx) |
-| 8765 | WebSocket event stream |
+| 8765 | WebSocket control + event stream |
 
-### Environment
+### UI flow
 
-Copy `.env.example` to `.env` and set at minimum `GITHUB_TOKEN`. Optional overrides:
-
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `SPECTRE_REPO` | `tmestery/SPECTRE` | Target `owner/repo` |
-| `SPECTRE_SCOPE` | `scopes/spectre.yaml` | Scope file path inside container |
-| `SPECTRE_BRANCH` | `main` | Branch to audit |
-| `SPECTRE_UI_DELAY` | `3` | Seconds before engagement starts |
-| `VITE_WS_URL` | `ws://localhost:8765` | Baked into UI at image build time |
+1. Open http://localhost:8080
+2. UI auto-connects to `ws://localhost:8765`
+3. Server sends `server_hello` with scope defaults and past sessions
+4. Click **Start audit** — no CLI step required
+5. Use **Past session** dropdown to replay completed runs
 
 ### Quick start
 
 ```bash
 cp .env.example .env
-# Set GITHUB_TOKEN (e.g. export GITHUB_TOKEN="$(gh auth token)" in .env)
+# Set GITHUB_TOKEN in .env
 
 docker compose up --build
 ```
 
-Open http://localhost:8080. When the first JSON line prints in the logs with `session_id`, connect in the UI or visit `http://localhost:8080/?session=<session_id>`.
-
-### CLI without full demo
+### CLI helpers
 
 ```bash
+docker compose --profile cli run --rm cli sessions
 docker compose --profile cli run --rm cli report --session eng_abc123
 docker compose --profile cli run --rm cli halt --session eng_abc123
 ```
 
-Volumes persist session data under `./data/sessions` and reports under `./reports`.
+Use a real `session_id` from the UI or `sessions` output — `eng_abc123` is only an example.
+
+### Local development (without Docker)
+
+```bash
+# Terminal 1
+python -m spectre.cli serve
+
+# Terminal 2
+npm run dev
+```
+
+Open http://localhost:5173 and click **Start audit**.
 
 ## Tests
 
-`tests/test_docker.py` — compose file shape, `WS_HOST` settings, Dockerfile tool declarations, entrypoint permissions.
+- `tests/test_control_server.py` — start validation, subscribe replay, halt guard
+- `tests/test_sessions.py` — session listing
+- `tests/test_docker.py` — compose + container config
 
 ## Changelog
 
-- **2026-06-25** — Initial Docker Compose stack for one-command demo runs.
+- **2026-06-25** — UI-driven starts via `spectre serve`; Docker no longer auto-runs engagements.
+- **2026-06-25** — Initial Docker Compose stack.

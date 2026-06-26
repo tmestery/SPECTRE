@@ -15,13 +15,13 @@ ENV VITE_WS_URL=$VITE_WS_URL
 
 RUN npm run build
 
-FROM python:3.12-slim-bookworm AS runtime
+FROM python:3.12-slim-bookworm AS python-base
 
 ARG GITLEAKS_VERSION=8.24.2
 ARG OSV_VERSION=1.9.2
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates curl git nginx \
+    && apt-get install -y --no-install-recommends ca-certificates curl git \
     && rm -rf /var/lib/apt/lists/* \
     && ARCH="$(dpkg --print-architecture)" \
     && case "$ARCH" in \
@@ -41,14 +41,25 @@ COPY pyproject.toml README.md ./
 COPY spectre ./spectre
 RUN pip install --no-cache-dir .
 
+ENV PYTHONUNBUFFERED=1 \
+    WS_HOST=0.0.0.0 \
+    SPECTRE_DATA_DIR=/app/data/sessions \
+    SCOPE_DIR=/app/scopes
+
+FROM python-base AS cli
+
+ENTRYPOINT ["python", "-m", "spectre.cli"]
+
+FROM python-base AS runtime
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends nginx \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY --from=ui-builder /ui/dist /usr/share/nginx/html
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker/entrypoint.sh /app/docker/entrypoint.sh
 RUN chmod +x /app/docker/entrypoint.sh
-
-ENV PYTHONUNBUFFERED=1 \
-    WS_HOST=0.0.0.0 \
-    SPECTRE_DATA_DIR=/app/data/sessions
 
 EXPOSE 8080 8765
 

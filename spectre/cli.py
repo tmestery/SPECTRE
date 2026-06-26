@@ -7,10 +7,13 @@ from pathlib import Path
 from spectre.bus.store import FindingsBus
 from spectre.config import settings
 from spectre.orchestrator.loop import Orchestrator, create_engagement
+from spectre.orchestrator.runner import launch_engagement, watch_halt_signal
 from spectre.report.generator import ReportGenerator
 from spectre.safety.halt import request_halt
 from spectre.schemas.events import EventType
 from spectre.schemas.scope import RepoScope
+from spectre.server.control import SpectreControlServer
+from spectre.sessions import list_sessions, session_exists
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -22,6 +25,16 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--scope", required=True, type=Path, help="Path to scope yaml")
     run.add_argument("--branch", default="main", help="Branch to audit")
     run.add_argument("--ws", action="store_true", help="Start WebSocket event stream")
+
+    serve = sub.add_parser("serve", help="Start WebSocket control server for the demo UI")
+    serve.add_argument(
+        "--scope-dir",
+        type=Path,
+        default=Path("scopes"),
+        help="Directory containing authorized scope yaml files",
+    )
+
+    sessions = sub.add_parser("sessions", help="List saved engagement sessions")
 
     halt = sub.add_parser("halt", help="Halt a running engagement")
     halt.add_argument("--session", required=True, help="Engagement session id")
@@ -71,20 +84,13 @@ async def _run_engagement(args: argparse.Namespace) -> int:
 
         ws_server = EngagementWebSocketServer(bus, engagement.id)
         server = await ws_server.start()
-
-        async def watch_halt() -> None:
-            while not ws_server.halt_requested():
-                await asyncio.sleep(0.2)
-            orchestrator.request_halt(engagement.id)
-            request_halt(engagement.id)
-
-        halt_task = asyncio.create_task(watch_halt())
+        halt_task = asyncio.create_task(watch_halt_signal(engagement.id, orchestrator))
 
     try:
         print(json.dumps({"session_id": engagement.id, "ws_port": settings.ws_port}), flush=True)
         stream_task = asyncio.create_task(_stream_events(bus))
-        run_task = asyncio.create_task(orchestrator.run(engagement))
-        _, result = await asyncio.gather(stream_task, run_task)
+        handle = launch_engagement(engagement, bus, orchestrator)
+        _, result = await asyncio.gather(stream_task, handle.task)
         print(json.dumps({"result": result.model_dump(mode="json")}), flush=True)
         return 0 if result.status.value in {"complete", "halted"} else 1
     finally:
@@ -93,6 +99,29 @@ async def _run_engagement(args: argparse.Namespace) -> int:
         if ws_server and server:
             await ws_server.stop(server)
         await bus.close()
+
+
+async def _serve(args: argparse.Namespace) -> int:
+    server = SpectreControlServer(scope_dir=args.scope_dir)
+    print(
+        json.dumps(
+            {
+                "status": "serving",
+                "ws_host": settings.ws_host,
+                "ws_port": settings.ws_port,
+                "scope_dir": str(args.scope_dir),
+            }
+        ),
+        flush=True,
+    )
+    await server.run_forever()
+    return 0
+
+
+async def _list_sessions() -> int:
+    summaries = await list_sessions(settings.spectre_data_dir)
+    print(json.dumps([summary.__dict__ for summary in summaries], indent=2), flush=True)
+    return 0
 
 
 async def _export_report(args: argparse.Namespace) -> int:
@@ -145,7 +174,16 @@ def main() -> None:
     if args.command == "run":
         raise SystemExit(asyncio.run(_run_engagement(args)))
 
+    if args.command == "serve":
+        raise SystemExit(asyncio.run(_serve(args)))
+
+    if args.command == "sessions":
+        raise SystemExit(asyncio.run(_list_sessions()))
+
     if args.command == "halt":
+        if not session_exists(settings.spectre_data_dir, args.session):
+            print(f"error: session not found: {args.session}", file=sys.stderr)
+            raise SystemExit(1)
         request_halt(args.session)
         print(json.dumps({"session_id": args.session, "halt": "requested"}), flush=True)
         raise SystemExit(0)

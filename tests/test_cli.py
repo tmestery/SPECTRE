@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from spectre.cli import build_parser
 
 
@@ -41,3 +43,16 @@ def test_report_parser_has_report_command():
     args = parser.parse_args(["report", "--session", "eng_abc", "--format", "markdown"])
     assert args.command == "report"
     assert args.session == "eng_abc"
+
+
+def test_serve_parser_has_scope_dir_default():
+    parser = build_parser()
+    args = parser.parse_args(["serve"])
+    assert args.command == "serve"
+    assert args.scope_dir == Path("scopes")
+
+
+def test_sessions_parser_exists():
+    parser = build_parser()
+    args = parser.parse_args(["sessions"])
+    assert args.command == "sessions"

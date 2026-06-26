@@ -10,6 +10,10 @@ class Settings(BaseSettings):
     ws_host: str = "127.0.0.1"
     ws_port: int = 8765
     spectre_data_dir: Path = Path("./data/sessions")
+    spectre_repo: str = "tmestery/SPECTRE"
+    spectre_branch: str = "main"
+    spectre_scope: str = "scopes/spectre.yaml"
+    scope_dir: Path = Path("scopes")
     log_level: str = "INFO"
 
 
