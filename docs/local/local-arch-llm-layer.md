@@ -11,28 +11,21 @@ SPECTRE agents run deterministic security tools first, then invoke **LLM-backed 
 ## Architecture
 
 ```
-Parent Agent (tool phase)
-        │
-        ▼
-AgentCognitiveRouter ──► SubagentRegistry
-        │                      │
-        │                      ├─ surface_analyst (recon)
-        │                      ├─ secret_triage (vuln_hunter)
-        │                      ├─ cve_prioritizer (vuln_hunter)
-        │                      ├─ threat_mapper (vuln_hunter)
-        │                      ├─ validation_advisor (exploiter)
-        │                      └─ executive_writer (reporter)
-        ▼
-LLMClient ──► Groq / OpenAI / Ollama (OpenAI-compatible)
-        │
-        ▼
-Findings Bus (agent_message, NOTE findings, llm_invocation audit events)
+Parent Agent
+    │
+    ├─► AgentReasoningLoop (LLM plans + tool calls, up to 6 steps)
+    │         │
+    │         └─► sandboxed agent tools (github, gitleaks, validators, …)
+    │
+    └─► AgentCognitiveRouter ──► SubagentRegistry (analysis / triage / narrative)
 ```
 
 ## Components
 
 | Path | Role |
 |------|------|
+| `spectre/agents/reasoning/loop.py` | **AgentReasoningLoop** — iterative plan/tool/complete cycle |
+| `spectre/agents/reasoning/toolkit.py` | Tool definitions exposed to the LLM |
 | `spectre/llm/client.py` | Async chat completions client |
 | `spectre/llm/router.py` | Per-task temperature / JSON mode routing |
 | `spectre/llm/prompts.py` | Subagent system prompts |
@@ -59,4 +52,5 @@ Without `GROQ_API_KEY`, tools still run but subagent pipelines are skipped.
 
 ## Changelog
 
+- **2026-06-25** — AgentReasoningLoop gives each agent multi-step LLM tool orchestration.
 - **2026-06-25** — Initial LLM layer with six subagents and cognitive router pipelines.

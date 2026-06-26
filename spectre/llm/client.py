@@ -98,7 +98,7 @@ class LLMClient:
 class MockLLMClient(LLMClient):
     """Deterministic LLM responses for tests."""
 
-    def __init__(self, responses: dict[str, str] | None = None) -> None:
+    def __init__(self, responses: dict[str, str] | None = None, queue: list[str] | None = None) -> None:
         super().__init__(
             provider="mock",
             api_key="mock-key",
@@ -106,10 +106,39 @@ class MockLLMClient(LLMClient):
             base_url="http://mock.local",
         )
         self._responses = responses or {}
+        self._queue = list(queue or [])
 
     @property
     def available(self) -> bool:
         return True
+
+    async def complete_json(
+        self,
+        messages: list[LLMMessage],
+        *,
+        temperature: float = 0.1,
+    ) -> tuple[dict, LLMCompletionResult]:
+        if self._queue:
+            content = self._queue.pop(0)
+        else:
+            joined = "\n".join(m.content for m in messages)
+            content = self._default_response(joined, json_mode=True)
+            for key, value in self._responses.items():
+                if key in joined:
+                    content = value
+                    break
+        from spectre.llm.json_utils import extract_json_object
+
+        parsed = extract_json_object(content)
+        result = LLMCompletionResult(
+            content=content,
+            model=self.model,
+            provider=self.provider,
+            prompt_tokens=10,
+            completion_tokens=20,
+            duration_ms=1,
+        )
+        return parsed, result
 
     async def complete(
         self,
