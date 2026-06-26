@@ -13,10 +13,12 @@ from spectre.schemas.events import EventType
 RELAYED_EVENTS = [
     EventType.ENGAGEMENT_STARTED,
     EventType.AGENT_ACTIVATED,
+    EventType.SUBAGENT_ACTIVATED,
     EventType.AGENT_MESSAGE,
     EventType.FINDING,
     EventType.HANDOFF_DECISION,
     EventType.TOOL_INVOCATION,
+    EventType.LLM_INVOCATION,
     EventType.REPORT_SECTION,
     EventType.ENGAGEMENT_HALTED,
     EventType.ENGAGEMENT_COMPLETE,

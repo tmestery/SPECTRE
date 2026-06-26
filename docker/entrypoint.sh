@@ -8,6 +8,11 @@ if [ -z "${GITHUB_TOKEN:-}" ]; then
   echo "Add GITHUB_TOKEN to .env (e.g. GITHUB_TOKEN=\$(gh auth token)) and restart."
 fi
 
+if [ -z "${GROQ_API_KEY:-}" ]; then
+  echo "WARNING: GROQ_API_KEY is not set. LLM subagents will be skipped."
+  echo "Add GROQ_API_KEY to .env for AI analysis."
+fi
+
 echo "Starting SPECTRE demo UI at http://localhost:${UI_PORT}"
 nginx
 

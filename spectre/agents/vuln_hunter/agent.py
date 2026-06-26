@@ -1,6 +1,9 @@
 from pathlib import Path
 
 from spectre.agents.base import AgentContext, AgentResult, AgentResultStatus
+from spectre.agents.context import findings_by_types
+from spectre.agents.cognitive import get_cognitive_runtime
+from spectre.agents.routing.registry import CognitiveRuntime
 from spectre.bus.store import FindingsBus
 from spectre.schemas.events import BusEvent
 from spectre.schemas.finding import Finding, FindingStatus, FindingType, Severity
@@ -13,6 +16,9 @@ from spectre.tools.workflows import WorkflowAnalyzer
 class VulnHunterAgent:
     id = "vuln_hunter"
     max_iterations = 1
+
+    def __init__(self, cognitive: CognitiveRuntime | None = None) -> None:
+        self._cognitive = cognitive or get_cognitive_runtime()
 
     async def run(self, ctx: AgentContext, bus: FindingsBus, engagement=None, **deps) -> AgentResult:
         workspace = await self._ensure_workspace(ctx, bus, engagement)
@@ -129,6 +135,22 @@ class VulnHunterAgent:
                 self.id,
                 f"Scan complete. Found {len(secrets)} secret(s); analyzed {len(dep_findings)} manifest(s).",
             )
+        )
+
+        all_findings = await bus.all_findings()
+        await self._cognitive.router.run_pipeline(
+            self.id,
+            ctx,
+            bus,
+            {
+                "secret_findings": findings_by_types(all_findings, {FindingType.SECRET}),
+                "vulnerability_findings": findings_by_types(
+                    all_findings, {FindingType.VULNERABILITY}
+                ),
+                "misconfiguration_findings": findings_by_types(
+                    all_findings, {FindingType.MISCONFIGURATION}
+                ),
+            },
         )
 
         return AgentResult(

@@ -23,6 +23,7 @@ export function AgentChatPanel({ messages }: Props) {
               <div>
                 <div className="chat-meta">
                   <strong>{agentLabel(msg.agent)}</strong>
+                  {msg.subagent ? <span className="subagent-chip">{msg.subagent}</span> : null}
                   <time>{new Date(msg.timestamp).toLocaleTimeString()}</time>
                 </div>
                 <p>{msg.message}</p>

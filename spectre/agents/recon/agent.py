@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from spectre.agents.base import AgentContext, AgentResult, AgentResultStatus
+from spectre.agents.routing.registry import CognitiveRuntime
 from spectre.bus.store import FindingsBus
 from spectre.schemas.events import BusEvent
 from spectre.schemas.finding import Finding, FindingType, Severity
@@ -11,6 +12,11 @@ from spectre.tools.github import GitHubClient
 class ReconAgent:
     id = "recon"
     max_iterations = 1
+
+    def __init__(self, cognitive: CognitiveRuntime | None = None) -> None:
+        from spectre.agents.cognitive import get_cognitive_runtime
+
+        self._cognitive = cognitive or get_cognitive_runtime()
 
     async def run(self, ctx: AgentContext, bus: FindingsBus, engagement=None, **deps) -> AgentResult:
         enforcer = ScopeEnforcer(ctx.scope)
@@ -106,6 +112,24 @@ class ReconAgent:
 
             if inventory.clone_path and engagement is not None:
                 engagement.workspace_path = str(inventory.clone_path)
+
+            await self._cognitive.router.run_pipeline(
+                self.id,
+                ctx,
+                bus,
+                {
+                    "inventory": {
+                        "repo": inventory.repo,
+                        "branch": inventory.branch,
+                        "default_branch": inventory.default_branch,
+                        "languages": inventory.languages,
+                        "file_count": len(inventory.files),
+                        "workflows": inventory.workflows,
+                        "dependencies": inventory.dependencies,
+                        "sample_files": inventory.files[:40],
+                    }
+                },
+            )
 
             return AgentResult(
                 status=AgentResultStatus.COMPLETE,

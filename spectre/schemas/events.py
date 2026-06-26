@@ -15,6 +15,8 @@ class EventType(str, Enum):
     FINDING = "finding"
     HANDOFF_DECISION = "handoff_decision"
     TOOL_INVOCATION = "tool_invocation"
+    LLM_INVOCATION = "llm_invocation"
+    SUBAGENT_ACTIVATED = "subagent_activated"
     ENGAGEMENT_HALTED = "engagement_halted"
     REPORT_SECTION = "report_section"
     ENGAGEMENT_COMPLETE = "engagement_complete"
@@ -37,9 +39,19 @@ class BusEvent(BaseModel):
         )
 
     @classmethod
-    def agent_message(cls, session_id: str, agent: str, message: str) -> "BusEvent":
+    def agent_message(
+        cls,
+        session_id: str,
+        agent: str,
+        message: str,
+        *,
+        subagent: str | None = None,
+    ) -> "BusEvent":
+        payload: dict[str, Any] = {"agent": agent, "message": message}
+        if subagent:
+            payload["subagent"] = subagent
         return cls(
             type=EventType.AGENT_MESSAGE,
             session_id=session_id,
-            payload={"agent": agent, "message": message},
+            payload=payload,
         )

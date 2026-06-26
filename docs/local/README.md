@@ -27,6 +27,7 @@ local-<area>-<topic>.md
 | [local-arch-agent-crew.md](local-arch-agent-crew.md) | Four-agent crew design |
 | [local-arch-findings-bus.md](local-arch-findings-bus.md) | Shared memory, event schema, pub/sub |
 | [local-arch-handoff-protocol.md](local-arch-handoff-protocol.md) | Coordination and handoff rules |
+| [local-arch-llm-layer.md](local-arch-llm-layer.md) | LLM client, routers, and subagents |
 | [local-arch-orchestrator.md](local-arch-orchestrator.md) | Crew loop, engagement lifecycle |
 | [local-arch-tech-stack.md](local-arch-tech-stack.md) | Python, React, GitHub API, Groq |
 | [local-dev-standards.md](local-dev-standards.md) | Async I/O, tests, documentation rules |

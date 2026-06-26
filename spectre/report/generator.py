@@ -100,24 +100,31 @@ class ReportGenerator:
             return None
         return f"**Evidence:** `{redact_text(str(snippet))}`"
 
-    def build_sections(self, findings: list[Finding], events: list[BusEvent]) -> list[ReportSection]:
+    def build_sections(
+        self,
+        findings: list[Finding],
+        events: list[BusEvent],
+        *,
+        executive_summary: str | None = None,
+    ) -> list[ReportSection]:
         self.sections = []
         scanned_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
         security = self._security_findings(findings)
         confirmed = [f for f in security if f.status == FindingStatus.CONFIRMED]
         high_or_above = [f for f in security if f.severity in {Severity.HIGH, Severity.CRITICAL}]
 
-        summary_md = "\n".join(
-            [
-                f"**Target:** `{self.repo}` @ `{self.branch}`",
-                f"**Scanned:** {scanned_at}",
-                f"**Scope:** {self.scope.name}",
-                "",
-                f"- Security findings: **{len(security)}**",
-                f"- Confirmed validations: **{len(confirmed)}**",
-                f"- High/Critical: **{len(high_or_above)}**",
-            ]
-        )
+        summary_lines = [
+            f"**Target:** `{self.repo}` @ `{self.branch}`",
+            f"**Scanned:** {scanned_at}",
+            f"**Scope:** {self.scope.name}",
+            "",
+            f"- Security findings: **{len(security)}**",
+            f"- Confirmed validations: **{len(confirmed)}**",
+            f"- High/Critical: **{len(high_or_above)}**",
+        ]
+        if executive_summary:
+            summary_lines.extend(["", executive_summary])
+        summary_md = "\n".join(summary_lines)
         self.sections.append(ReportSection("executive_summary", "Executive Summary", summary_md))
 
         scope_md = "\n".join(
@@ -187,8 +194,14 @@ class ReportGenerator:
 
         return self.sections
 
-    def render_markdown(self, findings: list[Finding], events: list[BusEvent]) -> str:
-        sections = self.build_sections(findings, events)
+    def render_markdown(
+        self,
+        findings: list[Finding],
+        events: list[BusEvent],
+        *,
+        executive_summary: str | None = None,
+    ) -> str:
+        sections = self.build_sections(findings, events, executive_summary=executive_summary)
         parts = ["# SPECTRE Repository Security Report", ""]
         for section in sections:
             parts.append(f"## {section.title}")

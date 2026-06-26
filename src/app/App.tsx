@@ -53,6 +53,13 @@ export function App() {
     <div className="shell">
       <ScopeBanner meta={state.meta} status={state.status} />
 
+      {!state.llmConfigured ? (
+        <p className="token-warning">
+          LLM is not configured. Add <code>GROQ_API_KEY</code> to <code>.env</code> for AI subagent
+          analysis (tools still run without it).
+        </p>
+      ) : null}
+
       {!state.githubTokenConfigured ? (
         <p className="token-warning">
           GITHUB_TOKEN is not set. Add it to <code>.env</code> and restart Docker

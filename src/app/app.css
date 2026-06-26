@@ -241,6 +241,14 @@ button:disabled {
   margin: 0.2rem 0 0;
 }
 
+.subagent-chip {
+  font-size: 0.7rem;
+  color: #c4b5fd;
+  border: 1px solid #5b21b6;
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+}
+
 .handoff-list {
   list-style: none;
   margin: 0;

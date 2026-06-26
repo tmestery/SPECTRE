@@ -48,6 +48,9 @@ export interface EngagementState {
   sessions: SessionSummary[];
   activeSession: string | null;
   githubTokenConfigured: boolean;
+  llmConfigured: boolean;
+  llmProvider: string | null;
+  llmModel: string | null;
 }
 
 const INITIAL: EngagementState = {
@@ -66,6 +69,9 @@ const INITIAL: EngagementState = {
   sessions: [],
   activeSession: null,
   githubTokenConfigured: true,
+  llmConfigured: true,
+  llmProvider: null,
+  llmModel: null,
 };
 
 function applyEvent(state: EngagementState, event: BusEvent): EngagementState {
@@ -88,6 +94,7 @@ function applyEvent(state: EngagementState, event: BusEvent): EngagementState {
           agent: String(event.payload.agent ?? ""),
           message: String(event.payload.message ?? ""),
           timestamp: event.timestamp,
+          subagent: event.payload.subagent ? String(event.payload.subagent) : undefined,
         },
       ];
       break;
@@ -159,6 +166,9 @@ export function useEngagementStream() {
           sessions: (data.sessions as SessionSummary[] | undefined) ?? s.sessions,
           activeSession: (data.active_session as string | null | undefined) ?? null,
           githubTokenConfigured: data.github_token_configured !== false,
+          llmConfigured: data.llm_configured !== false,
+          llmProvider: (data.llm_provider as string | undefined) ?? null,
+          llmModel: (data.llm_model as string | undefined) ?? null,
         }));
         break;
       case "engagement_launched":

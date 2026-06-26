@@ -5,6 +5,8 @@ export type EventType =
   | "finding"
   | "handoff_decision"
   | "tool_invocation"
+  | "llm_invocation"
+  | "subagent_activated"
   | "report_section"
   | "engagement_halted"
   | "engagement_complete";
@@ -49,6 +51,7 @@ export interface AgentMessage {
   agent: string;
   message: string;
   timestamp: string;
+  subagent?: string;
 }
 
 export interface EngagementMeta {

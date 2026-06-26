@@ -10,6 +10,7 @@ from websockets.server import WebSocketServerProtocol
 from spectre.bus.store import FindingsBus
 from spectre.config import settings
 from spectre.github_auth import github_api_error_message, github_token_configured
+from spectre.config import settings
 from spectre.orchestrator.loop import Orchestrator, create_engagement
 from spectre.orchestrator.runner import launch_engagement, watch_halt_signal
 from spectre.safety.halt import request_halt
@@ -74,6 +75,9 @@ class SpectreControlServer:
                     "active_session": self._active.session_id if self._active else None,
                     "sessions": [summary.__dict__ for summary in await list_sessions(settings.spectre_data_dir)],
                     "github_token_configured": github_token_configured(),
+                    "llm_configured": settings.llm_enabled and bool(settings.llm_api_key),
+                    "llm_provider": settings.llm_provider,
+                    "llm_model": settings.llm_model,
                 },
             )
             async for message in websocket:

@@ -1,25 +1,29 @@
 from uuid import uuid4
 
-from spectre.agents.base import AgentContext, BaseAgent
+from spectre.agents.base import AgentContext
+from spectre.agents.cognitive import get_cognitive_runtime
 from spectre.agents.exploiter.agent import ExploiterAgent
 from spectre.agents.recon.agent import ReconAgent
 from spectre.agents.reporter.agent import ReporterAgent
 from spectre.agents.vuln_hunter.agent import VulnHunterAgent
+from spectre.agents.routing.registry import CognitiveRuntime
 from spectre.bus.store import FindingsBus
+from spectre.llm.client import LLMClient
 from spectre.schemas.engagement import AgentResult, Engagement
 from spectre.schemas.events import BusEvent, EventType
 
 
 class AgentRegistry:
-    def __init__(self) -> None:
-        self._agents: dict[str, BaseAgent] = {
-            "recon": ReconAgent(),
-            "vuln_hunter": VulnHunterAgent(),
-            "exploiter": ExploiterAgent(),
-            "reporter": ReporterAgent(),
+    def __init__(self, llm: LLMClient | None = None) -> None:
+        self._cognitive = CognitiveRuntime.create(llm) if llm else get_cognitive_runtime()
+        self._agents = {
+            "recon": ReconAgent(self._cognitive),
+            "vuln_hunter": VulnHunterAgent(self._cognitive),
+            "exploiter": ExploiterAgent(self._cognitive),
+            "reporter": ReporterAgent(self._cognitive),
         }
 
-    def get(self, agent_id: str) -> BaseAgent:
+    def get(self, agent_id: str):
         if agent_id not in self._agents:
             raise KeyError(f"unknown agent: {agent_id}")
         return self._agents[agent_id]

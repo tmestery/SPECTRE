@@ -43,11 +43,13 @@ Docker Compose bundles nginx (static UI), a long-running WebSocket control serve
 cp .env.example .env
 # Required for private repos:
 # GITHUB_TOKEN=$(gh auth token)   # paste into .env
+# Required for AI subagents:
+# GROQ_API_KEY=...                # from console.groq.com
 
 docker compose up --build
 ```
 
-If you see a 404 from GitHub, the token is missing or lacks repo access — GitHub hides private repos behind 404 without auth.
+Subagents call Groq after each agent's tool phase. Check Groq dashboard for `llm_invocation` audit events in the UI stream.
 
 ### CLI helpers
 
