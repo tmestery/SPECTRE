@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AgentChatPanel } from "../crew/AgentChatPanel";
 import { HandoffGraph } from "../crew/HandoffGraph";
 import { FindingsTimeline } from "../findings/FindingsTimeline";
@@ -10,6 +10,17 @@ import { useEngagementStream } from "../hooks/useEngagementStream";
 export function App() {
   const { state, connect, disconnect, requestHalt } = useEngagementStream();
   const [sessionInput, setSessionInput] = useState("");
+  const autoConnected = useRef(false);
+
+  useEffect(() => {
+    if (autoConnected.current) return;
+    const session = new URLSearchParams(window.location.search).get("session");
+    if (session?.trim()) {
+      autoConnected.current = true;
+      setSessionInput(session.trim());
+      connect(session.trim());
+    }
+  }, [connect]);
 
   const repo = state.meta?.repo ?? "owner/repo";
   const branch = state.meta?.branch ?? "main";

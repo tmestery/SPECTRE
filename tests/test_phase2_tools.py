@@ -52,3 +52,43 @@ def test_workflow_analyzer_detects_pull_request_target(tmp_path):
 def test_workflow_analyzer_missing_file():
     issues = WorkflowAnalyzer().analyze_paths(Path("/nonexistent"), ["missing.yml"])
     assert issues == []
+
+
+def test_osv_resolve_scan_target_prefers_lockfile(tmp_path):
+    from spectre.tools.osv_scanner import OsvScanner
+    from spectre.bus.store import FindingsBus
+
+    bus = FindingsBus(tmp_path / "s" / "events.db")
+    scanner = OsvScanner(bus, "session")
+    pkg = tmp_path / "package.json"
+    lock = tmp_path / "package-lock.json"
+    pkg.write_text("{}", encoding="utf-8")
+    lock.write_text("{}", encoding="utf-8")
+    assert scanner._resolve_scan_target(pkg) == lock
+
+
+@pytest.mark.asyncio
+async def test_osv_scan_manifest_no_sources_returns_empty(tmp_path, monkeypatch):
+    from spectre.tools.osv_scanner import OsvScanner
+    from spectre.bus.store import FindingsBus
+
+    monkeypatch.setattr("spectre.tools.osv_scanner.shutil.which", lambda _: "/usr/bin/osv-scanner")
+
+    async def fake_proc(*_args, **_kwargs):
+        class Result:
+            returncode = 128
+
+            async def communicate(self):
+                return b"", b"No package sources found"
+
+        return Result()
+
+    monkeypatch.setattr("spectre.tools.osv_scanner.asyncio.create_subprocess_exec", fake_proc)
+
+    bus = FindingsBus(tmp_path / "s" / "events.db")
+    await bus.connect()
+    manifest = tmp_path / "package.json"
+    manifest.write_text("{}", encoding="utf-8")
+    scanner = OsvScanner(bus, "session")
+    assert await scanner.scan_manifest(manifest, "tmestery/SPECTRE") == []
+    await bus.close()

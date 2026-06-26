@@ -4,6 +4,19 @@
 
 ## Quick start
 
+### Docker (recommended)
+
+```bash
+cp .env.example .env
+# Set GITHUB_TOKEN in .env
+
+docker compose up --build
+```
+
+Open http://localhost:8080. Paste the `session_id` from the container logs, or use `?session=<id>` in the URL. See [docs/local/local-dev-docker.md](docs/local/local-dev-docker.md).
+
+### Local development
+
 ```bash
 # Python
 python3 -m venv .venv
