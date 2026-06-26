@@ -61,21 +61,21 @@ How do agents **coordinate**, **share findings**, and **decide what to hand off*
 
 **Issue seeds:** `#2` findings bus, `#3` repo scope, `#4` recon agent + GitHub API
 
-### Phase 2 — VulnHunter + Exploiter
+### Phase 2 — VulnHunter + Exploiter (complete)
 
 **Goal:** Full audit chain through first confirmed finding.
 
-| Deliverable | Notes |
-|-------------|-------|
-| Handoff protocol v1 | Recon → VulnHunter → Exploiter rules |
-| VulnHunter agent | gitleaks, osv-scanner, workflow misconfig checks |
-| Exploiter agent | Validate secrets (read-only), confirm CVE reachability |
-| Audit log | Every API call and scan recorded |
-| Redaction layer | Snippet redaction in bus and UI |
+| Deliverable | Status |
+|-------------|--------|
+| Handoff protocol v1 | Done (Phase 1) |
+| VulnHunter agent | Done — gitleaks fallback, osv-scanner, workflow analyzer |
+| Exploiter agent | Done — format/reachability/workflow validation |
+| Audit log | Done |
+| Redaction layer | Done |
 
-**Demo milestone:** Agents hand off; Exploiter confirms a secret or CVE in target repo.
+**Demo milestone:** Agents hand off; Exploiter confirms secrets or workflow misconfigs.
 
-**Issue seeds:** `#5` handoff protocol, `#6` vuln hunter, `#7` exploiter/validator
+**Issues:** #8, #9 (closed in PR #18)
 
 ### Phase 3 — Reporter + Demo UI
 
@@ -131,5 +131,6 @@ N/A — planning doc. Each phase deliverable follows [local-dev-standards.md](lo
 
 ## Changelog
 
+- 2026-06-26 — Phase 2 complete (VulnHunter + Exploiter, PR #18)
 - 2026-06-25 — Pivot primary target from DVWA to GitHub repos
 - 2026-06-25 — Initial roadmap

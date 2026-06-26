@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
-
-from spectre.bus.store import FindingsBus
+import shutil
+from pathlib import Path
 from spectre.orchestrator.handoffs import HandoffEngine
 from spectre.orchestrator.registry import AgentRegistry
 from spectre.schemas.engagement import Engagement, EngagementResult, EngagementStatus
@@ -66,6 +66,10 @@ class Orchestrator:
 
         if engagement.status == EngagementStatus.RUNNING:
             engagement.status = EngagementStatus.COMPLETE
+
+        if engagement.workspace_path:
+            shutil.rmtree(engagement.workspace_path, ignore_errors=True)
+            engagement.workspace_path = None
 
         findings = await self.bus.all_findings()
         await self.bus.publish(

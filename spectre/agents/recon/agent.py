@@ -1,4 +1,4 @@
-import shutil
+from pathlib import Path
 
 from spectre.agents.base import AgentContext, AgentResult, AgentResultStatus
 from spectre.bus.store import FindingsBus
@@ -12,7 +12,7 @@ class ReconAgent:
     id = "recon"
     max_iterations = 1
 
-    async def run(self, ctx: AgentContext, bus: FindingsBus, **deps) -> AgentResult:
+    async def run(self, ctx: AgentContext, bus: FindingsBus, engagement=None, **deps) -> AgentResult:
         enforcer = ScopeEnforcer(ctx.scope)
         github = GitHubClient(bus, ctx.session_id, enforcer)
         try:
@@ -104,8 +104,8 @@ class ReconAgent:
                 )
             )
 
-            if inventory.clone_path:
-                shutil.rmtree(inventory.clone_path, ignore_errors=True)
+            if inventory.clone_path and engagement is not None:
+                engagement.workspace_path = str(inventory.clone_path)
 
             return AgentResult(
                 status=AgentResultStatus.COMPLETE,
