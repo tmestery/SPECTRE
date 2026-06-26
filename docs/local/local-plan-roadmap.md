@@ -6,13 +6,13 @@
 
 ## Summary
 
-Master build plan for SPECTRE — a multi-agent penetration testing system with a visual demo. Phases progress from documentation and schemas through a working four-agent crew against DVWA, ending with handoff research instrumentation.
+Master build plan for SPECTRE — a multi-agent **GitHub repository security auditing** system with a visual demo. Phases progress from documentation through a working four-agent crew that audits authorized repos for secrets, vulnerable dependencies, and misconfigurations.
 
 ## Context
 
 ### Vision
 
-Watch a crew of specialized AI agents collaboratively pen test an authorized lab target. The demo is visual and compelling: agents talk to each other, findings accumulate on a timeline, and you see progressive compromise of a deliberately vulnerable system (DVWA first, HackTheBox-style later).
+Watch a crew of specialized AI agents collaboratively audit a GitHub repository. The demo is visual and compelling: agents talk to each other, findings accumulate on a timeline with file links, and you see progressive discovery of real issues (leaked secrets, CVEs, unsafe workflows) in a repo you own.
 
 ### Research angle
 
@@ -20,11 +20,11 @@ How do agents **coordinate**, **share findings**, and **decide what to hand off*
 
 ### Non-goals (v1)
 
-- Real-world target scanning or exploitation
+- Scanning arbitrary public repos without authorization
+- Mass org-wide or GitHub search sweeps
+- Auto-opening PRs or committing fixes without human approval
 - Cloud deployment or SaaS multi-tenancy
-- Full HackTheBox API integration
-- Autonomous post-exploitation / lateral movement
-- C2 frameworks or persistence mechanisms
+- Network pen test against web apps (DVWA optional Phase 4)
 
 ## Implementation
 
@@ -35,99 +35,101 @@ How do agents **coordinate**, **share findings**, and **decide what to hand off*
 | Deliverable | Status |
 |-------------|--------|
 | `AGENTS.md`, `SKILLS.md`, `.cursor/rules/` | Done |
-| `docs/local/` architecture and agent docs | Done |
+| `docs/local/` architecture and agent docs | In progress (GitHub pivot) |
 | `.cursor/skills/` workflow skills | Done |
 | `.github/` issue and PR templates | Done |
 | Pydantic schemas (`spectre/schemas/`) | Planned |
-| Empty `spectre/`, `src/`, `targets/` layout | Planned |
+| Empty `spectre/`, `src/`, `scopes/` layout | Planned |
 
 **Demo milestone:** Docs complete; agent can scaffold from this plan.
 
-### Phase 1 — Bus + Orchestrator + Recon
+### Phase 1 — Bus + Orchestrator + Recon (GitHub)
 
-**Goal:** Event-sourced findings bus, orchestrator loop, Recon agent against DVWA.
+**Goal:** Event-sourced findings bus, orchestrator loop, Recon agent mapping a repo.
 
 | Deliverable | Notes |
 |-------------|-------|
-| Findings Bus | SQLite or in-memory event store + pub/sub |
-| Scope enforcement | `scope.yaml` allowlist, reject out-of-scope |
+| Findings Bus | SQLite event store + pub/sub |
+| Repo scope enforcement | `scopes/*.yaml` allowlist, reject out-of-scope repos |
+| GitHub API client | List contents, workflows, languages, clone to temp dir |
 | Orchestrator skeleton | Engagement lifecycle, agent registry |
-| Recon agent | nmap + httpx wrappers, publishes `host`, `open_port`, `service` |
-| CLI `spectre run` | Start engagement, stream events to stdout |
+| Recon agent | Publishes `repository`, `file`, `workflow`, `dependency` findings |
+| CLI `spectre run --repo` | Start engagement, stream events to stdout |
 | WebSocket server | Broadcast bus events for UI (stub OK) |
 
-**Demo milestone:** Recon discovers DVWA ports/services; timeline populates in terminal or minimal UI.
+**Demo milestone:** Recon maps `tmestery/SPECTRE` (or your repo); timeline populates.
 
-**Issue seeds:** `#1` scaffold, `#2` findings bus, `#3` scope enforcement, `#4` recon agent
+**Issue seeds:** `#2` findings bus, `#3` repo scope, `#4` recon agent + GitHub API
 
-### Phase 2 — VulnHunter + Exploiter + DVWA
+### Phase 2 — VulnHunter + Exploiter
 
-**Goal:** Full attack chain through first confirmed exploit.
+**Goal:** Full audit chain through first confirmed finding.
 
 | Deliverable | Notes |
 |-------------|-------|
 | Handoff protocol v1 | Recon → VulnHunter → Exploiter rules |
-| VulnHunter agent | nuclei templates, SQLi/XSS probes for DVWA |
-| Exploiter agent | sqlmap wrapper, curl PoC scripts |
-| DVWA target | `targets/dvwa/docker-compose.yml` + `scope.yaml` |
-| Audit log | Every tool call recorded |
+| VulnHunter agent | gitleaks, osv-scanner, workflow misconfig checks |
+| Exploiter agent | Validate secrets (read-only), confirm CVE reachability |
+| Audit log | Every API call and scan recorded |
+| Redaction layer | Snippet redaction in bus and UI |
 
-**Demo milestone:** Agents hand off; Exploiter confirms SQLi or similar DVWA vuln.
+**Demo milestone:** Agents hand off; Exploiter confirms a secret or CVE in target repo.
 
-**Issue seeds:** `#5` handoff protocol, `#6` vuln hunter, `#7` exploiter, `#8` dvwa target
+**Issue seeds:** `#5` handoff protocol, `#6` vuln hunter, `#7` exploiter/validator
 
 ### Phase 3 — Reporter + Demo UI
 
-**Goal:** Compelling visual demo — the "watch agents break in" experience.
+**Goal:** Compelling visual demo — "watch agents audit your repo."
 
 | Deliverable | Notes |
 |-------------|-------|
 | Reporter agent | Executive summary, findings table, remediation |
-| Demo UI (`src/`) | Agent chat, findings timeline, handoff graph |
+| Demo UI (`src/`) | Agent chat, timeline with file links, handoff graph |
 | WebSocket integration | Real-time stream from orchestrator |
 | Kill switch | UI + CLI halt engagement |
-| Report export | Markdown + HTML artifacts |
+| Report export | Markdown + HTML with GitHub permalinks |
 
-**Demo milestone:** Full recorded demo — recon through report on DVWA with live UI.
+**Demo milestone:** Full recorded demo — recon through report on authorized repo.
 
-**Issue seeds:** `#9` reporter, `#10` demo UI shell, `#11` websocket stream, `#12` report export
+**Issue seeds:** `#8` reporter, `#9` demo UI, `#10` websocket, `#11` report export
 
 ### Phase 4 — Research instrumentation
 
-**Goal:** Export coordination data for analysis and paper/demo narrative.
+**Goal:** Export coordination data for analysis and demo narrative.
 
 | Deliverable | Notes |
 |-------------|-------|
 | Handoff decision log | Structured JSON per activation |
 | Coordination metrics | Time-to-handoff, findings-per-agent, false positive rate |
 | Replay mode | Re-run engagement from event log |
-| A/B handoff rules | Toggle threshold configs for comparison |
+| Vulnerable sample repo | Curated test repo with planted findings for repeatable demos |
 
-**Demo milestone:** Export session log; compare two handoff strategies side by side.
+**Demo milestone:** Export session log; replay audit on sample repo.
 
-**Issue seeds:** `#13` handoff logging, `#14` replay mode, `#15` metrics export
+**Issue seeds:** `#12` handoff logging, `#13` replay, `#14` sample repo
 
 ## Architecture decisions (locked for v1)
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| Coordination model | Bus + orchestrator (not direct agent chat) | Clear handoff boundaries; easier to log and research |
-| Primary language | Python orchestration + TS UI | Ecosystem for security tools + strong demo frontend |
-| LLM integration | Tool-calling agents with structured output | Agents reason; tools produce evidence |
-| Event store | SQLite (file per session) | Simple, inspectable, no external deps for demo |
-| Target v1 | DVWA in Docker | Well-known vulns, fast setup, compelling demo path |
-| UI framework | Vite + React | Matches SanFran3D conventions; fast iteration |
+| Coordination model | Bus + orchestrator | Clear handoff boundaries; easier to log and research |
+| Primary target | **GitHub repos** | Real demo on repos you own; concrete findings |
+| Primary language | Python orchestration + TS UI | GitHub API + security tool ecosystem |
+| LLM integration | Groq default; tool-calling agents | Fast demo inference |
+| Event store | SQLite per session | Simple, inspectable |
+| UI framework | Vite + React | Matches SanFran3D conventions |
 
 ## Open questions (resolve in Phase 1)
 
-1. **LangGraph vs custom loop** — LangGraph gives graph visualization; custom loop is simpler. Spike in `#1` scaffold issue.
-2. **LLM provider** — Groq (default), OpenAI, Anthropic, or Ollama. Config via `.env`; never commit keys.
-3. **Agent message format** — Full reasoning vs summary-only for demo UI. Default: summary + evidence links.
+1. **LangGraph vs custom loop** — spike in scaffold issue.
+2. **Clone vs API-only** — clone needed for gitleaks history; API for metadata. Hybrid likely.
+3. **Exploiter boundaries** — validate secrets with read-only checks only; no destructive API calls.
 
 ## Tests
 
-N/A — planning doc. Each phase deliverable follows [local-dev-standards.md](local-dev-standards.md) (1 positive + 3 negative per feature).
+N/A — planning doc. Each phase deliverable follows [local-dev-standards.md](local-dev-standards.md).
 
 ## Changelog
 
+- 2026-06-25 — Pivot primary target from DVWA to GitHub repos
 - 2026-06-25 — Initial roadmap

@@ -11,10 +11,10 @@ local-<area>-<topic>.md
 | `arch` | Architecture, system design, coordination protocols |
 | `dev` | Development standards, tooling, git workflow |
 | `agent` | Individual agent roles, prompts, tool access |
-| `tool` | Security tool wrappers (nmap, nuclei, etc.) |
-| `target` | Lab targets (DVWA, Juice Shop) |
+| `tool` | Security tool wrappers (gitleaks, GitHub API, etc.) |
+| `target` | GitHub repos, sample repos |
 | `ui` | Demo dashboard, streaming, visualization |
-| `safety` | Scope enforcement, audit, legal guardrails |
+| `safety` | Repo scope enforcement, audit, redaction |
 | `test` | Testing strategy, fixtures, patterns |
 | `plan` | Roadmap, milestones, research goals |
 
@@ -22,23 +22,24 @@ local-<area>-<topic>.md
 
 | Document | Description |
 |----------|-------------|
-| [local-plan-roadmap.md](local-plan-roadmap.md) | Master build plan, phases, milestones, research goals |
+| [local-plan-roadmap.md](local-plan-roadmap.md) | Master build plan, phases, milestones |
 | [local-arch-overview.md](local-arch-overview.md) | System architecture and folder layout |
-| [local-arch-agent-crew.md](local-arch-agent-crew.md) | Four-agent crew design and responsibilities |
+| [local-arch-agent-crew.md](local-arch-agent-crew.md) | Four-agent crew design |
 | [local-arch-findings-bus.md](local-arch-findings-bus.md) | Shared memory, event schema, pub/sub |
-| [local-arch-handoff-protocol.md](local-arch-handoff-protocol.md) | Coordination, activation rules, research instrumentation |
-| [local-arch-orchestrator.md](local-arch-orchestrator.md) | Crew loop, scheduling, engagement lifecycle |
-| [local-arch-tech-stack.md](local-arch-tech-stack.md) | Python, React, Docker, LLM integration choices |
-| [local-dev-standards.md](local-dev-standards.md) | Async I/O, tests, stop-on-break, documentation rules |
-| [local-dev-git-workflow.md](local-dev-git-workflow.md) | Issues, branches, PRs, commit hygiene |
-| [local-safety-lab-scope.md](local-safety-lab-scope.md) | Scope allowlists, audit log, kill switch |
-| [local-agent-recon.md](local-agent-recon.md) | Recon agent — discovery, tools, handoff triggers |
-| [local-agent-vuln-hunter.md](local-agent-vuln-hunter.md) | VulnHunter agent — vulnerability identification |
-| [local-agent-exploiter.md](local-agent-exploiter.md) | Exploiter agent — PoC exploitation |
-| [local-agent-reporter.md](local-agent-reporter.md) | Reporter agent — synthesis and report output |
-| [local-target-dvwa.md](local-target-dvwa.md) | DVWA Docker lab target setup and demo path |
-| [local-ui-demo-dashboard.md](local-ui-demo-dashboard.md) | Demo UI — agent chat, timeline, handoff graph |
-| [local-test-strategy.md](local-test-strategy.md) | pytest, vitest, integration test patterns |
+| [local-arch-handoff-protocol.md](local-arch-handoff-protocol.md) | Coordination and handoff rules |
+| [local-arch-orchestrator.md](local-arch-orchestrator.md) | Crew loop, engagement lifecycle |
+| [local-arch-tech-stack.md](local-arch-tech-stack.md) | Python, React, GitHub API, Groq |
+| [local-dev-standards.md](local-dev-standards.md) | Async I/O, tests, documentation rules |
+| [local-dev-git-workflow.md](local-dev-git-workflow.md) | Issues, branches, PRs |
+| [local-safety-lab-scope.md](local-safety-lab-scope.md) | Repo allowlists, audit, redaction |
+| [local-target-github-repo.md](local-target-github-repo.md) | **Primary v1 target** — GitHub repo audits |
+| [local-target-dvwa.md](local-target-dvwa.md) | ~~DVWA Docker lab~~ (deprecated) |
+| [local-agent-recon.md](local-agent-recon.md) | Recon — repo mapping |
+| [local-agent-vuln-hunter.md](local-agent-vuln-hunter.md) | VulnHunter — secrets, CVEs, workflows |
+| [local-agent-exploiter.md](local-agent-exploiter.md) | Exploiter — finding validation |
+| [local-agent-reporter.md](local-agent-reporter.md) | Reporter — repo security report |
+| [local-ui-demo-dashboard.md](local-ui-demo-dashboard.md) | Demo UI design |
+| [local-test-strategy.md](local-test-strategy.md) | pytest, vitest, fixtures |
 
 ## Adding docs
 

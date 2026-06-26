@@ -1,81 +1,38 @@
 ---
-description: SPECTRE — multi-agent pen testing crew conventions
+description: SPECTRE — multi-agent GitHub repo security auditing conventions
 alwaysApply: true
 ---
 
 # SPECTRE
 
-Self-coordinating Penetration and Exploit Crew for Threat Research and Exposure. Multi-agent lab pen testing with a visual demo UI.
+Self-coordinating Penetration and Exploit Crew for Threat Research and Exposure. Multi-agent **GitHub repository auditing** with a visual demo UI.
 
 ## Stack
 
-- **Orchestration:** Python 3.12+ (`spectre/`) — asyncio, Pydantic schemas, LangGraph or custom event loop (decide at Phase 1)
+- **Orchestration:** Python 3.12+ (`spectre/`) — asyncio, Pydantic schemas
 - **Demo UI:** Vite + React 18+ + TypeScript (strict) in `src/`
-- **Lab targets:** Docker Compose in `targets/`
+- **Targets:** Authorized GitHub repos via `scopes/*.yaml`
+- **Tools:** GitHub API, gitleaks, osv-scanner
+- **LLM:** Groq default (see `.env.example`)
 - **Streaming:** WebSocket from orchestrator to UI
-- Do not introduce cloud infra, C2, or real-world target lists unless explicitly requested
 
 ## Safety (non-negotiable)
 
-- **Authorized lab targets only** — every engagement requires `scope.yaml` with explicit allowlist
-- Tools and orchestrator **must reject** out-of-scope hosts before execution
-- Never scan, exploit, or document real-world systems without explicit written authorization in scope config
-- Audit log every tool invocation, finding, and handoff
-
-## Code style
-
-- Python: type hints, Pydantic models for bus schemas, `async` tool wrappers
-- TypeScript: functional React components, named exports for utilities
-- Smallest correct diff; no unrelated refactors
-- Agent prompts and tool configs live in `spectre/agents/` — not scattered magic strings
+- **Authorized repos only** — every engagement requires `scopes/*.yaml` with `allowed_repos`
+- Tools **must reject** out-of-scope repo slugs before clone or scan
+- Never audit arbitrary public repos without explicit scope authorization
+- Redact secrets in findings, UI, and reports; never commit `GITHUB_TOKEN`
+- Audit log every API call, scan, and handoff
 
 ## Architecture rules
 
 - **Bus-first coordination** — agents publish to Findings Bus; no direct agent-to-agent calls
-- **Orchestrator owns handoffs** — activation logic in `spectre/orchestrator/`, logged with human-readable reasons
-- **Sandboxed tools** — all offensive tooling wrapped in `spectre/tools/` with scope checks and timeouts
-- **Separation** — Python orchestration in `spectre/`; demo UI in `src/`; lab targets in `targets/`
-
-## File naming
-
-- `PascalCase` — React components (`AgentChatPanel.tsx`)
-- `camelCase` — TS hooks/utilities (`useFindingsStream.ts`)
-- `snake_case` — Python modules (`findings_bus.py`)
-- `kebab-case` — docs and config (`local-arch-overview.md`, `scope.yaml`)
-
-## Async I/O (required)
-
-- Python: `asyncio`, async subprocess for tools, async WebSocket server
-- Frontend: async fetch/WebSocket; never block UI thread with sync parsing of large payloads
-- Heavy report generation: async or background task with progress events
-
-## Testing (required per feature)
-
-- Minimum **1 positive** and **3 negative** tests per new feature
-- Python: `pytest` in `tests/` or colocated `test_*.py`
-- Frontend: `vitest` colocated `*.test.ts`
-- Include out-of-scope rejection tests for any tool wrapper or agent action
-
-## Stop on breakage (required)
-
-If tests, types, lint, or build fail: **stop** current work, **fix** immediately, verify green, then resume
-
-## Documentation (required)
-
-- Document every feature in `docs/local/local-<area>-<topic>.md`
-- Index new docs in `docs/local/README.md`
-- Use `.cursor/skills/document-feature/` template
-
-## Git workflow (required)
-
-- **Issue first** — open a GitHub issue before starting work
-- **Branch** — `feature|fix|chore/<issue>-<slug>` from latest `main`
-- **PR only** — never commit directly to `main`; open PR with summary, test plan, `Closes #<issue>`
-- Small focused commits; imperative messages; no secrets or generated artifacts
-- See `.cursor/skills/git-workflow/` and `docs/local/local-dev-git-workflow.md`
+- **Orchestrator owns handoffs** — logged with human-readable reasons
+- **Sandboxed tools** — wrapped in `spectre/tools/` with repo scope checks and timeouts
+- **Separation** — Python in `spectre/`; UI in `src/`; scope files in `scopes/`
 
 ## Scope guard
 
-- v1 is DVWA lab demo with four-agent crew and handoff visualization
-- No HackTheBox automation, cloud deployment, or credential harvesting beyond lab scope unless explicitly requested
-- See [AGENTS.md](AGENTS.md) and `.cursor/skills/` for architecture and workflows
+- v1 is **GitHub repo audit** with four-agent crew and handoff visualization
+- No org-wide sweeps, auto-PR fixes, or mass scanning unless explicitly requested
+- See [AGENTS.md](AGENTS.md) and `.cursor/skills/` for workflows

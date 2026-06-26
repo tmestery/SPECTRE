@@ -39,9 +39,9 @@ Direct agent-to-agent messaging is intentionally avoided. The bus pattern provid
 # spectre/schemas/finding.py (planned)
 class Finding(BaseModel):
     id: str                    # fnd_<ulid>
-    type: FindingType          # host | open_port | service | vulnerability | exploit_attempt | credential | note
+    type: FindingType          # repository | file | dependency | workflow | secret | misconfiguration | vulnerability | validation_attempt | note
     agent: str                 # recon | vuln_hunter | exploiter | reporter
-    target: str                # URL or host:port
+    target: str                # owner/repo or file path within repo
     severity: Severity         # info | low | medium | high | critical
     confidence: float          # 0.0 – 1.0
     title: str
@@ -49,7 +49,7 @@ class Finding(BaseModel):
     evidence: dict             # tool-specific structured output
     related_ids: list[str]     # upstream finding IDs
     handoff_hint: str | None   # suggested next agent
-    status: FindingStatus      # tentative | confirmed | false_positive | exploited
+    status: FindingStatus      # tentative | confirmed | false_positive | validated
     created_at: datetime
 ```
 
@@ -57,11 +57,11 @@ class Finding(BaseModel):
 
 | Severity | Examples |
 |----------|----------|
-| `info` | Open port, service banner, directory listing |
-| `low` | Version disclosure, missing security header |
-| `medium` | Reflected XSS, weak session config |
-| `high` | SQLi, auth bypass, RCE PoC |
-| `critical` | Confirmed RCE with data exfil (lab only) |
+| `info` | Repo metadata, file inventory, dependency manifest |
+| `low` | Missing `.gitignore` pattern, outdated non-critical dep |
+| `medium` | Exposed config, workflow using unpinned action |
+| `high` | Leaked API key (unvalidated), critical CVE in direct dep |
+| `critical` | Validated live secret, reachable RCE gadget in dependency |
 
 ### Storage
 
@@ -86,8 +86,8 @@ async for event in bus.subscribe(types=["finding", "agent_message"]):
 
 | Consumer | Query |
 |----------|-------|
-| VulnHunter on activation | All `open_port` + `service` for in-scope hosts |
-| Exploiter on activation | All `vulnerability` where exploitability ≥ threshold |
+| VulnHunter on activation | All `file`, `workflow`, `dependency` for in-scope repo |
+| Exploiter on activation | All `secret`, `vulnerability`, `misconfiguration` above threshold |
 | Reporter on activation | All findings, grouped by severity |
 | Handoff engine | Count by type/status since last agent completion |
 | Demo UI | All events, chronological |
@@ -108,4 +108,5 @@ Events serialize to JSON for UI consumption. Large evidence blobs truncated in s
 
 ## Changelog
 
+- 2026-06-25 — Updated finding types and severity for GitHub repo auditing
 - 2026-06-25 — Initial bus design

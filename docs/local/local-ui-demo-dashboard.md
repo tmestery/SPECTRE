@@ -6,7 +6,7 @@
 
 ## Summary
 
-The demo UI is SPECTRE's visual centerpiece — a real-time dashboard showing agent conversations, findings timeline, handoff graph, target status, and live report preview as the crew progresses through a lab engagement.
+The demo UI is SPECTRE's visual centerpiece — a real-time dashboard showing agent conversations, findings timeline with **file links**, handoff graph, repo status, and live report preview as the crew audits a GitHub repository.
 
 ## Context
 
@@ -18,16 +18,16 @@ The research demo must be **compelling to watch**. Viewers should see agents "ta
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  SPECTRE  │  Target: DVWA (127.0.0.1:4280)  │  [HALT]       │
+│  SPECTRE  │  tmestery/SPECTRE @ main  │  [HALT]            │
 ├──────────────────────┬──────────────────────────────────────┤
 │  AGENT CHAT          │  FINDINGS TIMELINE                   │
-│  ┌─────────────────┐ │  ● 12:00 Recon — port 4280 open      │
-│  │ Recon: Scanning │ │  ● 12:01 Recon — DVWA detected       │
-│  │ ...             │ │  ● 12:03 VulnHunter — SQLi found     │
-│  └─────────────────┘ │  ● 12:05 Exploiter — DB extracted    │
+│  ┌─────────────────┐ │  ● Recon — 36 files, 2 workflows     │
+│  │ Recon: Mapping  │ │  ● VulnHunter — secret in config.ts  │
+│  │ ...             │ │  ● Exploiter — key validated (live)  │
+│  └─────────────────┘ │  ● Reporter — drafting summary      │
 ├──────────────────────┤                                      │
 │  HANDOFF GRAPH       │  LIVE REPORT                         │
-│  Recon → Vuln → ...  │  Executive summary streaming...      │
+│  Recon → Vuln → ...  │  Findings with GitHub permalinks...  │
 └──────────────────────┴──────────────────────────────────────┘
 ```
 

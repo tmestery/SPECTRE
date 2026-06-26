@@ -2,68 +2,64 @@
 
 **Status:** draft  
 **Updated:** 2026-06-25  
-**Related:** [local-arch-agent-crew.md](local-arch-agent-crew.md), [local-target-dvwa.md](local-target-dvwa.md)
+**Related:** [local-target-github-repo.md](local-target-github-repo.md), [local-arch-agent-crew.md](local-arch-agent-crew.md)
 
 ## Summary
 
-The Recon agent performs discovery against in-scope targets — identifying hosts, open ports, services, and technology fingerprints. It is the first agent activated on engagement start.
+The Recon agent maps an authorized GitHub repository — structure, languages, dependency manifests, CI workflows, and notable files — publishing findings that seed VulnHunter's scan targets.
 
 ## Context
 
-Recon sets the foundation for all downstream agents. Output quality directly affects VulnHunter effectiveness. Recon must be thorough but bounded (max iterations, scope-limited).
+Recon is the entry point for every repo audit. It must be fast, scope-aware, and produce structured inventory findings rather than raw directory dumps.
 
 ## Implementation
 
 ### Responsibilities
 
-- Port scan in-scope hosts (nmap)
-- HTTP probing and title extraction (httpx)
-- Technology fingerprinting (whatweb or httpx headers)
-- Optional: directory enumeration (limited wordlist for demo)
-- Publish `host`, `open_port`, `service`, `note` findings
+- Fetch repo metadata via GitHub API (description, default branch, languages)
+- Clone repo to temp dir (shallow, branch-scoped)
+- Walk tree respecting `include_paths` / `exclude_paths`
+- Inventory dependency manifests (`package.json`, `requirements.txt`, `go.mod`, etc.)
+- List `.github/workflows/*.yml`
+- Publish `repository`, `file`, `workflow`, `dependency` findings
 
 ### Tools
 
 | Tool | Purpose | Output → Finding |
 |------|---------|------------------|
-| nmap | Port scan | `open_port`, `service` |
-| httpx | HTTP probe | `service` (http metadata) |
-| whatweb | Tech stack | `note` (tech fingerprint) |
-| feroxbuster / ffuf | Dir enum (optional) | `note` (paths found) |
+| GitHub API | Metadata, contents listing | `repository` |
+| git clone | Local tree for analysis | `file` |
+| manifest parser | Detect lockfiles and deps | `dependency` |
+| workflow parser | List CI workflows | `workflow` |
 
-### Prompt highlights
+### Demo path (tmestery/SPECTRE)
 
-- "You are the Recon agent. Discover attack surface on in-scope targets only."
-- "Publish structured findings for every discovery. Cite tool output."
-- "Do not attempt exploitation or vulnerability validation — hand off to VulnHunter."
-- "Prefer speed for demo: scan only allowed ports; use `-T4` nmap timing."
+1. API fetch repo metadata → `repository` finding
+2. Clone `main` → file tree
+3. Detect `package.json`, `pyproject.toml` (when added), workflows in `.github/`
+4. Publish findings with `handoff_hint: vuln_hunter`
 
-### DVWA demo path
+### Agent message examples
 
-1. nmap `127.0.0.1 -p 4280` → `open_port: 4280/tcp`
-2. httpx `http://127.0.0.1:4280` → Apache, PHP, DVWA title
-3. Publish `service` finding with `handoff_hint: vuln_hunter`
+> "Mapping tmestery/SPECTRE on branch main — 36 tracked files, 2 workflows detected."
+
+> "Found dependency manifests and GitHub Actions workflows. Handing off to VulnHunter for secret and CVE scans."
 
 ### Handoff trigger
 
-Orchestrator activates VulnHunter when [R1 discovery_sufficient](local-arch-handoff-protocol.md) fires.
-
-### Agent message examples (demo UI)
-
-> "Scanning 127.0.0.1 — found port 4280 open (HTTP). Running httpx for service details."
-
-> "Target appears to be DVWA (Damn Vulnerable Web Application) on Apache/PHP. Handing off to VulnHunter."
+[R1 repo_mapped](local-arch-handoff-protocol.md) when structure findings exist.
 
 ## Tests
 
 | Case | Type |
 |------|------|
-| Mock nmap output → valid open_port finding | Positive |
-| Out-of-scope host rejected before nmap | Negative |
-| Empty nmap output → no crash, optional note finding | Negative |
-| Max iterations stops further tool calls | Negative |
-| Recon refuses sqlmap/nuclei tools | Negative |
+| Mock GitHub API → valid repository finding | Positive |
+| Out-of-scope repo rejected before clone | Negative |
+| exclude_paths skips node_modules | Negative |
+| Empty repo handled gracefully | Negative |
+| Recon refuses gitleaks/sqlmap tools | Negative |
 
 ## Changelog
 
+- 2026-06-25 — Rewrote for GitHub repo reconnaissance
 - 2026-06-25 — Initial Recon agent doc

@@ -2,69 +2,46 @@
 
 **Status:** draft  
 **Updated:** 2026-06-25  
-**Related:** [local-arch-findings-bus.md](local-arch-findings-bus.md), [local-ui-demo-dashboard.md](local-ui-demo-dashboard.md)
+**Related:** [local-target-github-repo.md](local-target-github-repo.md), [local-ui-demo-dashboard.md](local-ui-demo-dashboard.md)
 
 ## Summary
 
-The Reporter agent synthesizes all bus findings into a structured penetration test report — executive summary, findings table, evidence appendix, and remediation recommendations.
+The Reporter agent synthesizes all bus findings into a **repository security report** — executive summary, findings table with GitHub permalinks, remediation steps, and agent coordination log.
 
 ## Context
 
-Reporter is read-only on tools (no offensive capabilities). It runs once at engagement end (or on timeout). Output feeds the demo UI live report panel and exportable artifacts.
+Reporter is read-only. Output is suitable for sharing with repo maintainers and doubles as the demo's payoff screen.
 
 ## Implementation
-
-### Responsibilities
-
-- Query all findings for the engagement
-- Deduplicate and group related findings
-- Generate executive summary (non-technical audience)
-- Build findings table: severity, title, status, remediation
-- Publish `report_section` events for streaming UI
-- Write final artifacts: `reports/<session_id>.md`, `.html`
 
 ### Report structure
 
 ```markdown
-# SPECTRE Penetration Test Report
+# SPECTRE Repository Security Report
+
+**Target:** tmestery/my-app @ main
+**Scanned:** 2026-06-25
 
 ## Executive Summary
-[2–3 paragraphs]
 
 ## Scope
-[From scope.yaml]
-
-## Methodology
-Recon → VulnHunter → Exploiter (automated agent crew)
+[From scopes/*.yaml]
 
 ## Findings Summary
-| ID | Severity | Title | Status |
-|----|----------|-------|--------|
+| ID | Severity | Type | Location | Status |
 
 ## Detailed Findings
-### FND-001: SQL Injection in DVWA
-...
+### FND-001: AWS key in git history
+**File:** src/config.ts:14 · [View on GitHub](permalink)
+**Remediation:** Rotate key, purge from history with git-filter-repo
 
 ## Agent Coordination Log
-[Handoff decisions summary — research section]
+[Handoff decisions]
 
-## Remediation Recommendations
-...
-
-## Appendix: Evidence
-...
+## Remediation Priority
+1. Rotate exposed credentials
+2. Patch CVE-XXXX in dependency X
 ```
-
-### Prompt highlights
-
-- "You are Reporter. Synthesize findings; do not speculate beyond evidence."
-- "Include handoff timeline for research transparency."
-- "Remediation must be actionable and specific."
-
-### Tools
-
-- Read-only bus query API
-- Jinja2 or markdown templates in `spectre/agents/reporter/templates/`
 
 ### Export formats
 
@@ -72,18 +49,23 @@ Recon → VulnHunter → Exploiter (automated agent crew)
 |--------|------|
 | Markdown | `reports/<session_id>.md` |
 | HTML | `reports/<session_id>.html` |
-| JSON | `reports/<session_id>.json` (machine-readable) |
+| SARIF (Phase 2) | `reports/<session_id>.sarif` |
+
+### GitHub permalinks
+
+Reporter generates `https://github.com/owner/repo/blob/<commit>/path#Lline` links from finding evidence.
 
 ## Tests
 
 | Case | Type |
 |------|------|
-| Mock findings → valid markdown report | Positive |
-| Empty findings → report with "no issues" section | Negative |
-| Duplicate findings deduplicated | Negative |
-| Report excludes out-of-scope findings | Negative |
-| Missing session ID raises clear error | Negative |
+| Mock findings → valid markdown with permalinks | Positive |
+| Empty findings → clean report | Negative |
+| Secrets redacted in report output | Negative |
+| Duplicates deduplicated | Negative |
+| Missing session raises clear error | Negative |
 
 ## Changelog
 
+- 2026-06-25 — Updated for repo security reports with GitHub links
 - 2026-06-25 — Initial Reporter agent doc

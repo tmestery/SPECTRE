@@ -2,15 +2,15 @@
 
 **Status:** active  
 **Updated:** 2026-06-25  
-**Related:** [local-arch-agent-crew.md](local-arch-agent-crew.md), [local-arch-orchestrator.md](local-arch-orchestrator.md)
+**Related:** [local-arch-agent-crew.md](local-arch-agent-crew.md), [local-target-github-repo.md](local-target-github-repo.md)
 
 ## Summary
 
-The handoff protocol defines **when** the orchestrator activates the next agent and **why**. Every decision is logged as a `handoff_decision` event with inputs, rule name, and human-readable rationale — the primary research artifact for studying agent coordination.
+The handoff protocol defines **when** the orchestrator activates the next agent and **why** during a GitHub repo audit. Every decision is logged as a `handoff_decision` event — the primary research artifact for studying agent coordination.
 
 ## Context
 
-Human pen testers implicitly hand off: "I found a web server, now someone should look for vulns." SPECTRE makes this explicit with deterministic rules (v1) that can later be extended with LLM-assisted prioritization (v2).
+Security auditors implicitly hand off: "I've mapped the repo, now someone should hunt secrets in history." SPECTRE makes this explicit with deterministic rules (v1).
 
 ## Implementation
 
@@ -19,13 +19,13 @@ Human pen testers implicitly hand off: "I found a web server, now someone should
 ```mermaid
 stateDiagram-v2
     [*] --> Recon: engagement_start
-    Recon --> VulnHunter: discovery_sufficient
-    Recon --> Reporter: recon_exhausted_no_services
-    VulnHunter --> Exploiter: exploitable_vuln_found
-    VulnHunter --> Reporter: no_exploitable_vulns
-    Exploiter --> Reporter: exploit_confirmed
-    Exploiter --> VulnHunter: exploit_failed_retry_vuln
-    Exploiter --> Reporter: exploits_exhausted
+    Recon --> VulnHunter: repo_mapped
+    Recon --> Reporter: recon_exhausted_empty_repo
+    VulnHunter --> Exploiter: actionable_finding
+    VulnHunter --> Reporter: no_actionable_findings
+    Exploiter --> Reporter: finding_validated
+    Exploiter --> VulnHunter: validation_failed_retry
+    Exploiter --> Reporter: validations_exhausted
     Reporter --> [*]: report_complete
 ```
 
@@ -34,45 +34,45 @@ stateDiagram-v2
 #### R1: Recon → VulnHunter
 
 ```yaml
-name: discovery_sufficient
+name: repo_mapped
 from: recon
 to: vuln_hunter
 when:
   all:
-    - finding.type in [open_port, service]
-    - finding.target in scope.allowlist
-    - count(findings where type=service) >= 1
-rationale: "Recon identified at least one service on an in-scope host."
+    - finding.type == repository
+    - finding.target in scope.allowed_repos
+    - count(findings where type in [file, workflow, dependency]) >= 1
+rationale: "Recon mapped repo structure with at least one scannable surface."
 ```
 
 #### R2: VulnHunter → Exploiter
 
 ```yaml
-name: exploitable_vuln_found
+name: actionable_finding
 from: vuln_hunter
 to: exploiter
 when:
-  all:
-    - finding.type == vulnerability
-    - finding.status in [tentative, confirmed]
-    - finding.evidence.exploitability >= 0.7
-rationale: "VulnHunter found a vulnerability with exploitability >= 0.7."
+  any:
+    - finding.type == secret AND finding.confidence >= 0.8
+    - finding.type == vulnerability AND finding.evidence.exploitability >= 0.7
+    - finding.type == misconfiguration AND finding.severity in [high, critical]
+rationale: "VulnHunter found a secret, CVE, or high-severity misconfig worth validating."
 ```
 
 #### R3: Exploiter → Reporter
 
 ```yaml
-name: exploit_confirmed
+name: finding_validated
 from: exploiter
 to: reporter
 when:
   any:
-    - finding.type == exploit_attempt AND finding.status == exploited
-    - agent.iterations_exhausted AND count(vulnerability) > 0
-rationale: "Exploitation confirmed or all exploit attempts exhausted with findings to report."
+    - finding.type == validation_attempt AND finding.status == confirmed
+    - agent.iterations_exhausted AND count(findings where severity >= medium) > 0
+rationale: "Finding validated or all validation attempts exhausted with reportable issues."
 ```
 
-#### R4: Any → Reporter (early exit)
+#### R4: Engagement timeout
 
 ```yaml
 name: engagement_timeout
@@ -80,55 +80,34 @@ from: "*"
 to: reporter
 when:
   engagement.elapsed > engagement.max_duration
-rationale: "Engagement time limit reached; generating partial report."
+rationale: "Time limit reached; generating partial report."
 ```
 
-### Handoff decision event
+### Handoff decision event (example)
 
 ```json
 {
   "type": "handoff_decision",
-  "rule": "exploitable_vuln_found",
+  "rule": "actionable_finding",
   "from_agent": "vuln_hunter",
   "to_agent": "exploiter",
-  "input_finding_ids": ["fnd_abc", "fnd_def"],
-  "rationale": "VulnHunter found SQL injection on /vulnerabilities/sqli/ with exploitability 0.85.",
+  "input_finding_ids": ["fnd_abc"],
+  "rationale": "VulnHunter found AWS key in src/config.ts (commit a1b2c3d) with confidence 0.92.",
   "timestamp": "2026-06-25T12:05:00Z"
 }
 ```
-
-### Agent completion signals
-
-Agents return one of:
-
-| Status | Meaning | Orchestrator action |
-|--------|---------|---------------------|
-| `complete` | Phase done, findings published | Evaluate handoff rules |
-| `blocked` | Scope violation or tool failure | Log, retry or halt |
-| `exhausted` | Max iterations, no more actions | Evaluate fallback rules |
-
-### Research instrumentation (Phase 4)
-
-Export per session:
-
-- `handoffs.jsonl` — all handoff decisions
-- `timeline.json` — agent active intervals
-- `metrics.json` — time-to-first-vuln, handoff count, findings per agent
-
-### Future: LLM-assisted prioritization (v2)
-
-When multiple vulns exist, an optional **Prioritizer** step (not a full agent) ranks findings before Exploiter activation. Logged separately to compare deterministic vs LLM-ranked handoffs.
 
 ## Tests
 
 | Case | Type |
 |------|------|
-| R1 fires when service finding exists on scope host | Positive |
-| R1 does not fire when only out-of-scope findings | Negative |
-| R2 does not fire when exploitability < 0.7 | Negative |
-| R4 fires on timeout with partial findings | Negative |
-| Handoff decision event contains all required fields | Negative |
+| R1 fires when repo + file findings exist | Positive |
+| R1 does not fire for out-of-scope repo slug | Negative |
+| R2 does not fire when secret confidence < 0.8 | Negative |
+| R4 fires on timeout | Negative |
+| Handoff event has required fields | Negative |
 
 ## Changelog
 
+- 2026-06-25 — Rewrote rules for GitHub repo auditing
 - 2026-06-25 — Initial handoff protocol

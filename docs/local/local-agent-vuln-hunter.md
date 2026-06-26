@@ -6,64 +6,61 @@
 
 ## Summary
 
-The VulnHunter agent identifies security weaknesses on discovered services — misconfigurations, known CVEs, and application-level vulnerabilities (SQLi, XSS, etc.). It publishes `vulnerability` findings with exploitability scores for handoff to Exploiter.
+The VulnHunter agent hunts for secrets, vulnerable dependencies, and misconfigurations in an authorized GitHub repo — publishing findings for Exploiter to validate.
 
 ## Context
 
-VulnHunter bridges discovery and exploitation. It validates that services are interesting but does not run full exploits (that's Exploiter's job). False positives are acceptable at `tentative` status; Exploiter confirms.
+VulnHunter consumes Recon's inventory to run targeted scans. It reports tentative findings; Exploiter confirms impact.
 
 ## Implementation
 
 ### Responsibilities
 
-- Run vulnerability scanners against in-scope web services
-- Perform targeted probes based on Recon findings (e.g. DVWA sqli endpoint)
-- Score exploitability (0.0–1.0) for handoff threshold
-- Publish `vulnerability` findings with evidence and `related_ids` to Recon findings
+- Run gitleaks on cloned repo (including git history per `max_commits_depth`)
+- Run osv-scanner on dependency manifests
+- Analyze GitHub Actions workflows for unsafe patterns
+- Flag committed configs (`.env`, credentials, debug flags)
+- Publish `secret`, `vulnerability`, `misconfiguration` findings
 
 ### Tools
 
 | Tool | Purpose | Output |
 |------|---------|--------|
-| nuclei | Template-based vuln scan | `vulnerability` |
-| nikto | Web server misconfig scan | `vulnerability`, `note` |
-| custom probes | DVWA-specific paths | `vulnerability` |
+| gitleaks | Secret detection in code + history | `secret` |
+| osv-scanner | CVE lookup for deps | `vulnerability` |
+| workflow analyzer | `pull_request_target`, unpinned actions | `misconfiguration` |
+| semgrep (Phase 2) | Static patterns | `vulnerability` |
 
-### Exploitability scoring (v1 heuristic)
+### Confidence / exploitability
 
-| Score | Criteria |
-|-------|----------|
-| 0.9–1.0 | Known exploitable class (SQLi, RCE gadget) with exposed endpoint |
-| 0.7–0.9 | Likely vuln with partial evidence (error-based SQLi indicator) |
-| 0.4–0.6 | Potential issue needing confirmation |
-| < 0.4 | Informational, no handoff to Exploiter |
+| Finding | Score driver |
+|---------|--------------|
+| Secret | Rule match strength, entropy, file path sensitivity |
+| CVE | CVSS, direct vs transitive dep, usage in code |
+| Workflow | Known dangerous pattern (e.g. PRT with checkout of PR head) |
 
-### DVWA demo path
+### Demo path
 
-1. nuclei against `http://127.0.0.1:4280` with OWASP templates
-2. Probe `/vulnerabilities/sqli/` — error-based SQLi indicator
-3. Publish `vulnerability`: SQL injection, exploitability 0.85, `handoff_hint: exploiter`
-
-### Prompt highlights
-
-- "You are VulnHunter. Identify vulnerabilities; do not exploit."
-- "Set exploitability score honestly. Tentative findings are OK."
-- "Link each vulnerability to Recon finding IDs in related_ids."
+1. gitleaks on clone → secret in history (or planted in sample repo)
+2. osv-scanner on `package-lock.json` → CVE
+3. Workflow check → unpinned `actions/checkout@v3`
+4. Hand off highest-confidence finding to Exploiter
 
 ### Handoff trigger
 
-[R2 exploitable_vuln_found](local-arch-handoff-protocol.md) when exploitability ≥ 0.7.
+[R2 actionable_finding](local-arch-handoff-protocol.md)
 
 ## Tests
 
 | Case | Type |
 |------|------|
-| Mock nuclei output → vulnerability finding with score | Positive |
-| Out-of-scope URL rejected | Negative |
-| Low exploitability finding does not trigger exploiter handoff | Negative |
-| VulnHunter refuses sqlmap | Negative |
-| Malformed scanner output handled gracefully | Negative |
+| Mock gitleaks output → secret finding | Positive |
+| Out-of-scope repo rejected | Negative |
+| Low-confidence secret does not trigger exploiter | Negative |
+| VulnHunter refuses live token validation | Negative |
+| Malformed scanner output handled | Negative |
 
 ## Changelog
 
+- 2026-06-25 — Rewrote for repo secret/CVE hunting
 - 2026-06-25 — Initial VulnHunter agent doc

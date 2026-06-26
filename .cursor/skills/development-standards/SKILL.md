@@ -13,8 +13,8 @@ Apply these rules on **every** change. They override continuing unrelated work.
 
 ## Lab scope (required)
 
-- **Authorized lab targets only** — every engagement needs `scope.yaml` with explicit allowlist.
-- Tool wrappers **must** call scope check before subprocess execution.
+- **Authorized repos only** — every engagement needs `scopes/*.yaml` with `allowed_repos`.
+- Tool wrappers **must** call repo scope check before clone or scan.
 - Tests **must** include out-of-scope rejection for any tool wrapper or agent action.
 - Never commit API keys, real target lists, or session data with captured credentials.
 

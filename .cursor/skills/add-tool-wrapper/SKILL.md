@@ -1,9 +1,9 @@
 ---
 name: add-tool-wrapper
 description: >-
-  Creates a sandboxed wrapper for a security tool (nmap, nuclei, sqlmap, etc.)
-  with scope checks, timeouts, audit logging, and Finding output parsing.
-  Use when integrating a new offensive or recon tool.
+  Creates a sandboxed wrapper for a repo security tool (GitHub API, gitleaks,
+  osv-scanner, etc.) with repo scope checks, timeouts, audit logging, and
+  Finding output parsing. Use when integrating a new scanning tool.
 ---
 
 # Add Tool Wrapper
@@ -17,7 +17,7 @@ description: >-
 
 1. **Create wrapper** at `spectre/tools/<tool>.py` extending `spectre/tools/base.py`:
    - `async def run(target: str, **opts) -> ToolResult`
-   - Call `safety.scope.check(target)` first
+   - `safety.scope.check_repo(owner/repo)` first
    - Async subprocess with timeout (default 120s)
    - Audit log via bus `tool_invocation` event
    - Parse stdout/stderr → structured dict

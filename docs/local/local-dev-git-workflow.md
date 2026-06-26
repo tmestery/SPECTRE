@@ -55,18 +55,18 @@ Example: `feature/4-recon-agent`
 
 | Issue | Title |
 |-------|-------|
-| #1 | Scaffold Python + UI monorepo |
-| #2 | Implement Findings Bus and schemas |
-| #3 | Scope enforcement and audit log |
-| #4 | Recon agent and nmap wrapper |
-| #5 | Handoff protocol v1 |
-| #6 | VulnHunter agent |
-| #7 | Exploiter agent |
-| #8 | DVWA Docker target |
-| #9 | Reporter agent |
+| #1 | Phase 0: documentation and agent scaffold |
+| #2 | Scaffold Python + UI monorepo |
+| #3 | Implement Findings Bus and repo finding schemas |
+| #4 | Repo scope enforcement and audit log |
+| #5 | Recon agent + GitHub API client |
+| #6 | Handoff protocol v1 (repo rules) |
+| #7 | VulnHunter agent + gitleaks wrapper |
+| #8 | Exploiter agent + validation layer |
+| #9 | Reporter agent + GitHub permalink reports |
 | #10 | Demo UI shell |
 | #11 | WebSocket event stream |
-| #12 | Report export |
+| #12 | Intentionally vulnerable sample repo for demos |
 
 ## Tests
 

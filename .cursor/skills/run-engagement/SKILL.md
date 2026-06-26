@@ -1,55 +1,48 @@
 ---
 name: run-engagement
 description: >-
-  Runs a full SPECTRE penetration test engagement against an authorized lab
-  target. Use when demoing, testing the crew end-to-end, or validating handoffs.
+  Runs a full SPECTRE GitHub repository audit. Use when demoing, testing the
+  crew end-to-end, or validating handoffs against an authorized repo.
 ---
 
 # Run Engagement
 
-**Lab targets only.** Verify scope before running.
+**Authorized repos only.** Verify scope before running.
 
 ## Prerequisites
 
-- Lab target running (see **setup-lab-target**)
-- `scope.yaml` exists for target
-- LLM API key in `.env` (not committed)
-- Python env installed (`pip install -e .` once scaffold exists)
+- Scope file in `scopes/<name>.yaml`
+- `GITHUB_TOKEN` and `GROQ_API_KEY` in `.env`
+- Python env installed (once scaffold exists)
 
 ## Steps
 
-1. **Start target**
+1. **Create or verify scope**
    ```bash
-   docker compose -f targets/dvwa/docker-compose.yml up -d
-   ./targets/dvwa/healthcheck.sh
+   # scopes/spectre.yaml — allowed_repos: [tmestery/SPECTRE]
    ```
 
-2. **Configure DVWA** (first run)
-   - Open http://127.0.0.1:4280
-   - Login: admin / password
-   - Set security level to **Low**
-
-3. **Start orchestrator**
+2. **Run audit**
    ```bash
    python -m spectre.cli run \
-     --target dvwa \
-     --scope targets/dvwa/scope.yaml
+     --repo tmestery/SPECTRE \
+     --scope scopes/spectre.yaml \
+     --branch main
    ```
 
-4. **Start demo UI** (Phase 3)
+3. **Start demo UI** (Phase 3)
    ```bash
    npm run dev
-   # Open http://localhost:5173
    ```
 
-5. **Watch** — agent chat, timeline, handoffs in UI or terminal stream
+4. **Watch** — agent chat, timeline with file links, handoffs
 
-6. **Halt** if needed
+5. **Halt** if needed
    ```bash
    python -m spectre.cli halt --session <id>
    ```
 
-7. **Export report**
+6. **Export report**
    ```bash
    python -m spectre.cli report --session <id> --format markdown
    ```
@@ -58,14 +51,14 @@ description: >-
 
 | Problem | Fix |
 |---------|-----|
-| Scope rejection | Check target URL matches `scope.yaml` |
-| Tool not found | Install nmap/sqlmap or use Docker sidecar |
-| LLM errors | Verify `.env` API key |
-| DVWA not ready | Wait for compose health; check port 4280 |
+| Scope rejection | Repo slug must match `allowed_repos` exactly |
+| 401 from GitHub | Check `GITHUB_TOKEN` scopes |
+| Empty findings | Repo may be clean — use sample repo for demo |
+| LLM errors | Verify `GROQ_API_KEY` |
 
 ## Checklist
 
-- [ ] Only in-scope URLs in scope file
+- [ ] Only in-scope repos
 - [ ] Engagement halted when done
-- [ ] Report exported for review
-- [ ] No credentials committed from session
+- [ ] Report exported
+- [ ] No tokens in committed artifacts

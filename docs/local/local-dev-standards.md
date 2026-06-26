@@ -6,7 +6,7 @@
 
 ## Summary
 
-Mandatory development discipline for SPECTRE: lab-only targets, async I/O, minimum test coverage per feature, stop-and-fix on breakage, and documentation for every change.
+Mandatory development discipline for SPECTRE: authorized repos only, async I/O, minimum test coverage per feature, stop-and-fix on breakage, and documentation for every change.
 
 ## Context
 
@@ -14,10 +14,10 @@ SPECTRE runs offensive security tooling. Standards emphasize safety guardrails a
 
 ## Implementation
 
-### Lab scope (required)
+### Repo scope (required)
 
-- Every engagement requires a `scope.yaml` with explicit host/IP allowlist.
-- Tool wrappers **must** call `safety.scope.check(target)` before execution.
+- Every engagement requires `scopes/*.yaml` with explicit `allowed_repos`.
+- Tool wrappers **must** call repo scope check before clone or scan.
 - Tests **must** include out-of-scope rejection for any tool wrapper or agent action.
 - Never commit real target lists, credentials, or API keys.
 
