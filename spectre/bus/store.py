@@ -1,6 +1,7 @@
 import asyncio
 import json
 from collections.abc import AsyncIterator
+from datetime import datetime
 from pathlib import Path
 
 import aiosqlite
@@ -146,6 +147,31 @@ class FindingsBus:
             (self._session_id_from_path(),),
         )
         return [Finding.model_validate(json.loads(row[0])) for row in rows]
+
+    async def all_events(self, types: list[EventType] | None = None) -> list[BusEvent]:
+        session_id = self._session_id_from_path()
+        rows = await self._fetchall(
+            "SELECT id, type, session_id, sequence_num, payload, timestamp FROM events "
+            "WHERE session_id = ? ORDER BY sequence_num",
+            (session_id,),
+        )
+        allowed = {t.value for t in types} if types else None
+        events: list[BusEvent] = []
+        for row in rows:
+            event_type = row[1]
+            if allowed is not None and event_type not in allowed:
+                continue
+            events.append(
+                BusEvent(
+                    id=row[0],
+                    type=EventType(event_type),
+                    session_id=row[2],
+                    sequence_num=row[3],
+                    payload=json.loads(row[4]),
+                    timestamp=datetime.fromisoformat(row[5]),
+                )
+            )
+        return events
 
     async def subscribe(self, types: list[EventType] | None = None) -> AsyncIterator[BusEvent]:
         queue: asyncio.Queue[BusEvent] = asyncio.Queue()

@@ -14,8 +14,10 @@ __pycache__/
 htmlcov/
 .mypy_cache/
 .ruff_cache/
+*.tsbuildinfo
 reports/*.pdf
 reports/*.html
+reports/*.md
 !reports/.gitkeep
 data/sessions/*
 !data/sessions/.gitkeep

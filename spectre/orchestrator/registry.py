@@ -1,8 +1,9 @@
 from uuid import uuid4
 
-from spectre.agents.base import AgentContext, BaseAgent, StubAgent
+from spectre.agents.base import AgentContext, BaseAgent
 from spectre.agents.exploiter.agent import ExploiterAgent
 from spectre.agents.recon.agent import ReconAgent
+from spectre.agents.reporter.agent import ReporterAgent
 from spectre.agents.vuln_hunter.agent import VulnHunterAgent
 from spectre.bus.store import FindingsBus
 from spectre.schemas.engagement import AgentResult, Engagement
@@ -15,7 +16,7 @@ class AgentRegistry:
             "recon": ReconAgent(),
             "vuln_hunter": VulnHunterAgent(),
             "exploiter": ExploiterAgent(),
-            "reporter": StubAgent("reporter", "Reporter"),
+            "reporter": ReporterAgent(),
         }
 
     def get(self, agent_id: str) -> BaseAgent:

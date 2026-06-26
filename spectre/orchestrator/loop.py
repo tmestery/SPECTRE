@@ -1,8 +1,10 @@
 from datetime import datetime, timezone
 import shutil
 from pathlib import Path
+from spectre.bus.store import FindingsBus
 from spectre.orchestrator.handoffs import HandoffEngine
 from spectre.orchestrator.registry import AgentRegistry
+from spectre.safety.halt import clear_halt, is_halt_requested
 from spectre.schemas.engagement import Engagement, EngagementResult, EngagementStatus
 from spectre.schemas.events import BusEvent, EventType
 from spectre.schemas.scope import RepoScope
@@ -44,7 +46,7 @@ class Orchestrator:
 
         current_agent = "recon"
         while engagement.status == EngagementStatus.RUNNING:
-            if self.is_halted(engagement.id):
+            if self.is_halted(engagement.id) or is_halt_requested(engagement.id):
                 engagement.halt_requested = True
                 engagement.status = EngagementStatus.HALTED
                 await self.bus.publish(
@@ -70,6 +72,8 @@ class Orchestrator:
         if engagement.workspace_path:
             shutil.rmtree(engagement.workspace_path, ignore_errors=True)
             engagement.workspace_path = None
+
+        clear_halt(engagement.id)
 
         findings = await self.bus.all_findings()
         await self.bus.publish(

@@ -1,0 +1,14 @@
+export const AGENT_META: Record<string, { label: string; color: string }> = {
+  recon: { label: "Recon", color: "#38bdf8" },
+  vuln_hunter: { label: "VulnHunter", color: "#fbbf24" },
+  exploiter: { label: "Exploiter", color: "#f87171" },
+  reporter: { label: "Reporter", color: "#4ade80" },
+};
+
+export function agentLabel(agentId: string): string {
+  return AGENT_META[agentId]?.label ?? agentId;
+}
+
+export function agentColor(agentId: string): string {
+  return AGENT_META[agentId]?.color ?? "#94a3b8";
+}

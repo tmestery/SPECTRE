@@ -34,3 +34,10 @@ def test_help_lists_commands(capsys):
         parser.parse_args([])
     except SystemExit:
         pass
+
+
+def test_report_parser_has_report_command():
+    parser = build_parser()
+    args = parser.parse_args(["report", "--session", "eng_abc", "--format", "markdown"])
+    assert args.command == "report"
+    assert args.session == "eng_abc"

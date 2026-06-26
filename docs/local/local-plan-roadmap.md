@@ -77,21 +77,21 @@ How do agents **coordinate**, **share findings**, and **decide what to hand off*
 
 **Issues:** #8, #9 (closed in PR #18)
 
-### Phase 3 — Reporter + Demo UI
+### Phase 3 — Reporter + Demo UI (complete)
 
 **Goal:** Compelling visual demo — "watch agents audit your repo."
 
-| Deliverable | Notes |
-|-------------|-------|
-| Reporter agent | Executive summary, findings table, remediation |
-| Demo UI (`src/`) | Agent chat, timeline with file links, handoff graph |
-| WebSocket integration | Real-time stream from orchestrator |
-| Kill switch | UI + CLI halt engagement |
-| Report export | Markdown + HTML with GitHub permalinks |
+| Deliverable | Status |
+|-------------|--------|
+| Reporter agent | Done — markdown/HTML export, GitHub permalinks, `report_section` events |
+| Demo UI (`src/`) | Done — chat, timeline, handoffs, live report, halt |
+| WebSocket integration | Done — relays full engagement event stream |
+| Kill switch | Done — UI + CLI `spectre halt --session` |
+| Report export | Done — `spectre report --session <id>` |
 
 **Demo milestone:** Full recorded demo — recon through report on authorized repo.
 
-**Issue seeds:** `#8` reporter, `#9` demo UI, `#10` websocket, `#11` report export
+**Issues:** #10, #11, #12
 
 ### Phase 4 — Research instrumentation
 
@@ -131,6 +131,6 @@ N/A — planning doc. Each phase deliverable follows [local-dev-standards.md](lo
 
 ## Changelog
 
-- 2026-06-26 — Phase 2 complete (VulnHunter + Exploiter, PR #18)
+- 2026-06-26 — Phase 3 complete (Reporter + Demo UI + WebSocket, PR pending)
 - 2026-06-25 — Pivot primary target from DVWA to GitHub repos
 - 2026-06-25 — Initial roadmap

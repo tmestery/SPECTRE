@@ -1,7 +1,7 @@
 # local-ui-demo-dashboard
 
-**Status:** draft  
-**Updated:** 2026-06-25  
+**Status:** active  
+**Updated:** 2026-06-26  
 **Related:** [local-arch-orchestrator.md](local-arch-orchestrator.md), [local-agent-reporter.md](local-agent-reporter.md)
 
 ## Summary
@@ -94,10 +94,10 @@ Event routing:
 
 ### Phase 3 deliverables
 
-1. Static shell with mock data
-2. WebSocket live stream
-3. Halt button wired to orchestrator
-4. Report panel with markdown render
+1. Reporter agent streams `report_section` events and writes `reports/<session>.md` + `.html`
+2. WebSocket live stream (all engagement event types)
+3. Halt button + CLI `spectre halt --session` via signal file
+4. Demo UI dashboard with chat, timeline, handoffs, live report
 
 ## Tests
 
