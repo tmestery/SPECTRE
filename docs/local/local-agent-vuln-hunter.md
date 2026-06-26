@@ -1,7 +1,7 @@
 # local-agent-vuln-hunter
 
-**Status:** draft  
-**Updated:** 2026-06-25  
+**Status:** active  
+**Updated:** 2026-06-26  
 **Related:** [local-agent-recon.md](local-agent-recon.md), [local-agent-exploiter.md](local-agent-exploiter.md)
 
 ## Summary
@@ -62,5 +62,6 @@ VulnHunter consumes Recon's inventory to run targeted scans. It reports tentativ
 
 ## Changelog
 
+- 2026-06-26 — Implemented VulnHunter agent with gitleaks fallback, osv-scanner, workflow analyzer
 - 2026-06-25 — Rewrote for repo secret/CVE hunting
 - 2026-06-25 — Initial VulnHunter agent doc

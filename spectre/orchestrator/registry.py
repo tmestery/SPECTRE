@@ -1,7 +1,9 @@
 from uuid import uuid4
 
 from spectre.agents.base import AgentContext, BaseAgent, StubAgent
+from spectre.agents.exploiter.agent import ExploiterAgent
 from spectre.agents.recon.agent import ReconAgent
+from spectre.agents.vuln_hunter.agent import VulnHunterAgent
 from spectre.bus.store import FindingsBus
 from spectre.schemas.engagement import AgentResult, Engagement
 from spectre.schemas.events import BusEvent, EventType
@@ -11,8 +13,8 @@ class AgentRegistry:
     def __init__(self) -> None:
         self._agents: dict[str, BaseAgent] = {
             "recon": ReconAgent(),
-            "vuln_hunter": StubAgent("vuln_hunter", "VulnHunter"),
-            "exploiter": StubAgent("exploiter", "Exploiter"),
+            "vuln_hunter": VulnHunterAgent(),
+            "exploiter": ExploiterAgent(),
             "reporter": StubAgent("reporter", "Reporter"),
         }
 
@@ -39,6 +41,7 @@ class AgentRegistry:
             activation_id=activation_id,
             iteration=1,
             max_iterations=agent.max_iterations,
+            workspace_path=engagement.workspace_path,
         )
         await bus.publish(
             BusEvent(
@@ -52,4 +55,4 @@ class AgentRegistry:
                 },
             )
         )
-        return await agent.run(ctx, bus)
+        return await agent.run(ctx, bus, engagement=engagement)

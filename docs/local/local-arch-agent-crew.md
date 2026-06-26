@@ -37,11 +37,11 @@ sequenceDiagram
 
 ### Agent specifications
 
-| Agent | ID | Activation trigger | Max iterations | Tool access |
-|-------|-----|-------------------|----------------|-------------|
+| Agent | Status | Handoff trigger | Max iterations | Tool access |
+|-------|--------|-----------------|----------------|-------------|
 | Recon | `recon` | Engagement start | 3 | GitHub API, clone, tree walk |
 | VulnHunter | `vuln_hunter` | Repo surface mapped | 5 | gitleaks, osv-scanner, workflow parser |
-| Exploiter | `exploiter` | Actionable finding (secret/CVE/misconfig) | 3 | token validators, reachability analyzer |
+| Exploiter | `exploiter` | Actionable finding | 3 | format validators, reachability analyzer |
 | Reporter | `reporter` | Validation done or exhausted | 1 | read-only bus, report templates |
 
 ### Individual agent docs

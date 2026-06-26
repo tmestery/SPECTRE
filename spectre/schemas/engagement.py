@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from enum import Enum
+from pathlib import Path
 from uuid import uuid4
 
 from pydantic import BaseModel, Field
@@ -22,6 +23,7 @@ class Engagement(BaseModel):
     scope: RepoScope
     status: EngagementStatus = EngagementStatus.INITIALIZING
     halt_requested: bool = False
+    workspace_path: str | None = None
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     max_duration_minutes: int = 30
 
