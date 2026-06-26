@@ -2,13 +2,14 @@ import asyncio
 import json
 from typing import Any
 
-import websockets
-from websockets.server import WebSocketServerProtocol
+from websockets.exceptions import ConnectionClosed
+from websockets.server import ServerConnection
 
 from spectre.bus.store import FindingsBus
 from spectre.config import settings
 from spectre.safety.halt import request_halt
 from spectre.schemas.events import EventType
+from spectre.server.serve import serve_spectre_ws
 
 RELAYED_EVENTS = [
     EventType.ENGAGEMENT_STARTED,
@@ -29,13 +30,13 @@ class EngagementWebSocketServer:
     def __init__(self, bus: FindingsBus, session_id: str) -> None:
         self.bus = bus
         self.session_id = session_id
-        self._clients: set[WebSocketServerProtocol] = set()
+        self._clients: set[ServerConnection] = set()
         self._relay_task: asyncio.Task | None = None
         self._halt_requested = False
 
     async def start(self) -> asyncio.Server:
         self._relay_task = asyncio.create_task(self._relay_events())
-        return await websockets.serve(self._handler, settings.ws_host, settings.ws_port)
+        return await serve_spectre_ws(self._handler, settings.ws_host, settings.ws_port)
 
     async def stop(self, server: asyncio.Server) -> None:
         server.close()
@@ -49,7 +50,7 @@ class EngagementWebSocketServer:
         for client in list(self._clients):
             await client.close()
 
-    async def _handler(self, websocket: WebSocketServerProtocol) -> None:
+    async def _handler(self, websocket: ServerConnection) -> None:
         self._clients.add(websocket)
         try:
             await websocket.send(
@@ -74,11 +75,11 @@ class EngagementWebSocketServer:
         async for event in self.bus.subscribe(RELAYED_EVENTS):
             payload: dict[str, Any] = event.model_dump(mode="json")
             message = json.dumps(payload)
-            dead: list[WebSocketServerProtocol] = []
+            dead: list[ServerConnection] = []
             for client in self._clients:
                 try:
                     await client.send(message)
-                except websockets.ConnectionClosed:
+                except ConnectionClosed:
                     dead.append(client)
             for client in dead:
                 self._clients.discard(client)

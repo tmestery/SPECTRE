@@ -1,23 +1,27 @@
 import asyncio
 import json
+import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 import websockets
-from websockets.server import WebSocketServerProtocol
+from websockets.exceptions import ConnectionClosed
+from websockets.server import ServerConnection
 
 from spectre.bus.store import FindingsBus
 from spectre.config import settings
 from spectre.github_auth import github_api_error_message, github_token_configured
-from spectre.config import settings
 from spectre.orchestrator.loop import Orchestrator, create_engagement
 from spectre.orchestrator.runner import launch_engagement, watch_halt_signal
 from spectre.safety.halt import request_halt
 from spectre.schemas.events import EventType
 from spectre.schemas.scope import RepoScope
 from spectre.server.websocket import RELAYED_EVENTS
+from spectre.server.serve import serve_spectre_ws
 from spectre.sessions import list_sessions, session_exists
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -36,18 +40,18 @@ class ActiveEngagement:
     task: asyncio.Task
     relay_task: asyncio.Task
     halt_task: asyncio.Task
-    subscribers: set[WebSocketServerProtocol] = field(default_factory=set)
+    subscribers: set[ServerConnection] = field(default_factory=set)
 
 
 class SpectreControlServer:
     def __init__(self, scope_dir: Path | None = None) -> None:
         self.scope_dir = scope_dir or settings.scope_dir
-        self._clients: set[WebSocketServerProtocol] = set()
+        self._clients: set = set()
         self._active: ActiveEngagement | None = None
         self._server: asyncio.Server | None = None
 
     async def start(self) -> asyncio.Server:
-        self._server = await websockets.serve(self._handler, settings.ws_host, settings.ws_port)
+        self._server = await serve_spectre_ws(self._handler, settings.ws_host, settings.ws_port)
         return self._server
 
     async def run_forever(self) -> None:
@@ -63,7 +67,7 @@ class SpectreControlServer:
         for client in list(self._clients):
             await client.close()
 
-    async def _handler(self, websocket: WebSocketServerProtocol) -> None:
+    async def _handler(self, websocket: ServerConnection) -> None:
         self._clients.add(websocket)
         try:
             await self._send(
@@ -87,7 +91,7 @@ class SpectreControlServer:
             if self._active:
                 self._active.subscribers.discard(websocket)
 
-    async def _handle_message(self, websocket: WebSocketServerProtocol, data: dict[str, Any]) -> None:
+    async def _handle_message(self, websocket: ServerConnection, data: dict[str, Any]) -> None:
         msg_type = data.get("type")
         if msg_type == "start_engagement":
             await self._start_engagement(
@@ -119,7 +123,7 @@ class SpectreControlServer:
 
     async def _start_engagement(
         self,
-        websocket: WebSocketServerProtocol,
+        websocket: ServerConnection,
         *,
         repo: str,
         branch: str,
@@ -207,7 +211,7 @@ class SpectreControlServer:
             },
         )
 
-    async def _subscribe(self, websocket: WebSocketServerProtocol, session_id: str) -> None:
+    async def _subscribe(self, websocket: ServerConnection, session_id: str) -> None:
         if not session_id:
             await self._send(websocket, {"type": "error", "message": "session_id is required"})
             return
@@ -231,7 +235,7 @@ class SpectreControlServer:
 
         await self._send(websocket, {"type": "subscribed", "session_id": session_id, "live": False})
 
-    async def _halt(self, websocket: WebSocketServerProtocol, session_id: str) -> None:
+    async def _halt(self, websocket: ServerConnection, session_id: str) -> None:
         if not session_exists(settings.spectre_data_dir, session_id):
             await self._send(websocket, {"type": "error", "message": f"session not found: {session_id}"})
             return
@@ -247,11 +251,11 @@ class SpectreControlServer:
             if not self._active or self._active.session_id != session_id:
                 break
             payload = event.model_dump(mode="json")
-            dead: list[WebSocketServerProtocol] = []
+            dead: list[ServerConnection] = []
             for client in list(self._active.subscribers):
                 try:
                     await self._send(client, payload)
-                except websockets.ConnectionClosed:
+                except ConnectionClosed:
                     dead.append(client)
             for client in dead:
                 self._active.subscribers.discard(client)
@@ -259,11 +263,11 @@ class SpectreControlServer:
     async def _notify_subscribers(self, payload: dict[str, Any]) -> None:
         if not self._active:
             return
-        dead: list[WebSocketServerProtocol] = []
+        dead: list[ServerConnection] = []
         for client in list(self._active.subscribers):
             try:
                 await self._send(client, payload)
-            except websockets.ConnectionClosed:
+            except ConnectionClosed:
                 dead.append(client)
         for client in dead:
             self._active.subscribers.discard(client)
@@ -325,5 +329,5 @@ class SpectreControlServer:
             raise ValueError(f"scope file not found: {scope_path}")
         return RepoScope.load(path)
 
-    async def _send(self, websocket: WebSocketServerProtocol, payload: dict[str, Any]) -> None:
+    async def _send(self, websocket: ServerConnection, payload: dict[str, Any]) -> None:
         await websocket.send(json.dumps(payload))
