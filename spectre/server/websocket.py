@@ -33,7 +33,7 @@ class EngagementWebSocketServer:
 
     async def start(self) -> asyncio.Server:
         self._relay_task = asyncio.create_task(self._relay_events())
-        return await websockets.serve(self._handler, "localhost", settings.ws_port)
+        return await websockets.serve(self._handler, settings.ws_host, settings.ws_port)
 
     async def stop(self, server: asyncio.Server) -> None:
         server.close()

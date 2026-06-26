@@ -1,0 +1,43 @@
+services:
+  spectre:
+    build:
+      context: .
+      args:
+        VITE_WS_URL: ${VITE_WS_URL:-ws://localhost:8765}
+    env_file:
+      - path: .env
+        required: false
+    ports:
+      - "${WS_PORT:-8765}:8765"
+      - "${SPECTRE_UI_PORT:-8080}:8080"
+    volumes:
+      - ./scopes:/app/scopes:ro
+      - ./data/sessions:/app/data/sessions
+      - ./reports:/app/reports
+    environment:
+      WS_HOST: "0.0.0.0"
+      WS_PORT: "8765"
+      SPECTRE_DATA_DIR: /app/data/sessions
+      SPECTRE_REPO: ${SPECTRE_REPO:-tmestery/SPECTRE}
+      SPECTRE_SCOPE: ${SPECTRE_SCOPE:-scopes/spectre.yaml}
+      SPECTRE_BRANCH: ${SPECTRE_BRANCH:-main}
+      SPECTRE_UI_PORT: "8080"
+      SPECTRE_UI_DELAY: ${SPECTRE_UI_DELAY:-3}
+    restart: "no"
+
+  cli:
+    build:
+      context: .
+      target: runtime
+    profiles:
+      - cli
+    env_file:
+      - path: .env
+        required: false
+    volumes:
+      - ./scopes:/app/scopes:ro
+      - ./data/sessions:/app/data/sessions
+      - ./reports:/app/reports
+    environment:
+      SPECTRE_DATA_DIR: /app/data/sessions
+    entrypoint: ["python", "-m", "spectre.cli"]

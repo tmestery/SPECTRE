@@ -29,17 +29,19 @@ class OsvScanner:
         if not shutil.which("osv-scanner"):
             return await self._fallback_scan(manifest_path, repo)
 
+        scan_target = self._resolve_scan_target(manifest_path)
         timer = AuditTimer()
         proc = await asyncio.create_subprocess_exec(
             "osv-scanner",
             "--format",
             "json",
-            str(manifest_path),
+            str(scan_target),
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
         )
         stdout, stderr = await proc.communicate()
         exit_code = proc.returncode or 0
+        err_text = stderr.decode().strip()
         await audit_tool(
             self.bus,
             self.session_id,
@@ -48,15 +50,31 @@ class OsvScanner:
             scope_check="passed",
             exit_code=exit_code,
             duration_ms=timer.elapsed_ms(),
-            metadata={"manifest": str(manifest_path)},
+            metadata={"manifest": str(manifest_path), "scan_target": str(scan_target)},
         )
         if exit_code not in (0, 1):
-            raise RuntimeError(stderr.decode().strip() or "osv-scanner failed")
+            if exit_code == 128 or "No package sources found" in err_text:
+                return []
+            raise RuntimeError(err_text or "osv-scanner failed")
 
         text = stdout.decode().strip()
         if not text:
             return []
         return self._parse_osv_json(json.loads(text))
+
+    def _resolve_scan_target(self, manifest_path: Path) -> Path:
+        name = manifest_path.name
+        lock_candidates = {
+            "package.json": "package-lock.json",
+            "Pipfile": "Pipfile.lock",
+        }
+        if name in lock_candidates:
+            lock = manifest_path.parent / lock_candidates[name]
+            if lock.exists():
+                return lock
+        if name in {"package.json", "pyproject.toml", "requirements.txt"}:
+            return manifest_path.parent
+        return manifest_path
 
     def _parse_osv_json(self, payload: dict) -> list[OsvVulnerability]:
         results: list[OsvVulnerability] = []

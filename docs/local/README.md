@@ -41,6 +41,7 @@ local-<area>-<topic>.md
 | [local-ui-demo-dashboard.md](local-ui-demo-dashboard.md) | Demo UI design |
 | [local-tool-websocket-stream.md](local-tool-websocket-stream.md) | WebSocket event stream + halt |
 | [local-test-strategy.md](local-test-strategy.md) | pytest, vitest, fixtures |
+| [local-dev-docker.md](local-dev-docker.md) | Docker Compose one-command demo |
 
 ## Adding docs
 
