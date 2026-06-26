@@ -17,6 +17,7 @@ class AgentContext:
         activation_id: str,
         iteration: int,
         max_iterations: int,
+        workspace_path: str | None = None,
     ) -> None:
         self.engagement_id = engagement_id
         self.session_id = session_id
@@ -27,13 +28,14 @@ class AgentContext:
         self.activation_id = activation_id
         self.iteration = iteration
         self.max_iterations = max_iterations
+        self.workspace_path = workspace_path
 
 
 class BaseAgent:
     id: str = "base"
     max_iterations: int = 1
 
-    async def run(self, ctx: AgentContext, bus, **deps) -> AgentResult:  # noqa: ANN001
+    async def run(self, ctx: AgentContext, bus, engagement=None, **deps) -> AgentResult:  # noqa: ANN001
         raise NotImplementedError
 
 
@@ -43,14 +45,14 @@ class StubAgent(BaseAgent):
         self.label = label
         self.max_iterations = 1
 
-    async def run(self, ctx: AgentContext, bus, **deps) -> AgentResult:  # noqa: ANN001
+    async def run(self, ctx: AgentContext, bus, engagement=None, **deps) -> AgentResult:  # noqa: ANN001
         from spectre.schemas.events import BusEvent
 
         await bus.publish(
             BusEvent.agent_message(
                 ctx.session_id,
                 self.id,
-                f"{self.label} is not implemented yet (Phase 2+). Completing handoff chain.",
+                f"{self.label} is not implemented yet (Phase 3). Completing handoff chain.",
             )
         )
         return AgentResult(status=AgentResultStatus.EXHAUSTED, message=f"{self.id} stub complete")

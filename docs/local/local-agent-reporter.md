@@ -1,7 +1,7 @@
 # local-agent-reporter
 
-**Status:** draft  
-**Updated:** 2026-06-25  
+**Status:** active  
+**Updated:** 2026-06-26  
 **Related:** [local-target-github-repo.md](local-target-github-repo.md), [local-ui-demo-dashboard.md](local-ui-demo-dashboard.md)
 
 ## Summary

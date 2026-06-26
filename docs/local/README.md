@@ -39,6 +39,7 @@ local-<area>-<topic>.md
 | [local-agent-exploiter.md](local-agent-exploiter.md) | Exploiter — finding validation |
 | [local-agent-reporter.md](local-agent-reporter.md) | Reporter — repo security report |
 | [local-ui-demo-dashboard.md](local-ui-demo-dashboard.md) | Demo UI design |
+| [local-tool-websocket-stream.md](local-tool-websocket-stream.md) | WebSocket event stream + halt |
 | [local-test-strategy.md](local-test-strategy.md) | pytest, vitest, fixtures |
 
 ## Adding docs

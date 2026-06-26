@@ -7,7 +7,20 @@ from websockets.server import WebSocketServerProtocol
 
 from spectre.bus.store import FindingsBus
 from spectre.config import settings
+from spectre.safety.halt import request_halt
 from spectre.schemas.events import EventType
+
+RELAYED_EVENTS = [
+    EventType.ENGAGEMENT_STARTED,
+    EventType.AGENT_ACTIVATED,
+    EventType.AGENT_MESSAGE,
+    EventType.FINDING,
+    EventType.HANDOFF_DECISION,
+    EventType.TOOL_INVOCATION,
+    EventType.REPORT_SECTION,
+    EventType.ENGAGEMENT_HALTED,
+    EventType.ENGAGEMENT_COMPLETE,
+]
 
 
 class EngagementWebSocketServer:
@@ -16,7 +29,7 @@ class EngagementWebSocketServer:
         self.session_id = session_id
         self._clients: set[WebSocketServerProtocol] = set()
         self._relay_task: asyncio.Task | None = None
-        self._halt_callback: asyncio.Event = asyncio.Event()
+        self._halt_requested = False
 
     async def start(self) -> asyncio.Server:
         self._relay_task = asyncio.create_task(self._relay_events())
@@ -37,24 +50,26 @@ class EngagementWebSocketServer:
     async def _handler(self, websocket: WebSocketServerProtocol) -> None:
         self._clients.add(websocket)
         try:
-            await websocket.send(json.dumps({"type": "subscribed", "session_id": self.session_id}))
+            await websocket.send(
+                json.dumps(
+                    {
+                        "type": "subscribed",
+                        "session_id": self.session_id,
+                        "ws_url": f"ws://localhost:{settings.ws_port}",
+                    }
+                )
+            )
             async for message in websocket:
                 data = json.loads(message)
                 if data.get("type") == "halt":
-                    self._halt_callback.set()
-                    await websocket.send(json.dumps({"type": "halt_ack"}))
+                    self._halt_requested = True
+                    request_halt(self.session_id)
+                    await websocket.send(json.dumps({"type": "halt_ack", "session_id": self.session_id}))
         finally:
             self._clients.discard(websocket)
 
     async def _relay_events(self) -> None:
-        async for event in self.bus.subscribe(
-            [
-                EventType.AGENT_MESSAGE,
-                EventType.FINDING,
-                EventType.HANDOFF_DECISION,
-                EventType.ENGAGEMENT_COMPLETE,
-            ]
-        ):
+        async for event in self.bus.subscribe(RELAYED_EVENTS):
             payload: dict[str, Any] = event.model_dump(mode="json")
             message = json.dumps(payload)
             dead: list[WebSocketServerProtocol] = []
@@ -67,7 +82,4 @@ class EngagementWebSocketServer:
                 self._clients.discard(client)
 
     def halt_requested(self) -> bool:
-        return self._halt_callback.is_set()
-
-    def clear_halt(self) -> None:
-        self._halt_callback.clear()
+        return self._halt_requested
