@@ -53,6 +53,13 @@ export function App() {
     <div className="shell">
       <ScopeBanner meta={state.meta} status={state.status} />
 
+      {!state.githubTokenConfigured ? (
+        <p className="token-warning">
+          GITHUB_TOKEN is not set. Add it to <code>.env</code> and restart Docker
+          (e.g. <code>GITHUB_TOKEN=$(gh auth token)</code>).
+        </p>
+      ) : null}
+
       <div className="toolbar start-panel">
         <label className="field">
           Repository

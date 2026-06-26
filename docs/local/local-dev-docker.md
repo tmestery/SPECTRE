@@ -41,10 +41,13 @@ Docker Compose bundles nginx (static UI), a long-running WebSocket control serve
 
 ```bash
 cp .env.example .env
-# Set GITHUB_TOKEN in .env
+# Required for private repos:
+# GITHUB_TOKEN=$(gh auth token)   # paste into .env
 
 docker compose up --build
 ```
+
+If you see a 404 from GitHub, the token is missing or lacks repo access — GitHub hides private repos behind 404 without auth.
 
 ### CLI helpers
 

@@ -56,10 +56,32 @@ def scope_file(tmp_path: Path) -> Path:
 
 
 @pytest.mark.asyncio
+async def test_control_server_rejects_start_without_github_token(tmp_path, monkeypatch, scope_file):
+    from spectre import config
+
+    monkeypatch.setattr(config.settings, "spectre_data_dir", tmp_path / "sessions")
+    monkeypatch.setattr(config.settings, "github_token", "")
+    server = SpectreControlServer(scope_dir=scope_file)
+    ws = FakeWebSocket()
+
+    await server._start_engagement(
+        ws,
+        repo="tmestery/SPECTRE",
+        branch="main",
+        scope_path=str(scope_file / "test.yaml"),
+    )
+
+    payload = json.loads(ws.sent[-1])
+    assert payload["type"] == "error"
+    assert "GITHUB_TOKEN" in payload["message"]
+
+
+@pytest.mark.asyncio
 async def test_control_server_rejects_out_of_scope_repo(tmp_path, monkeypatch, scope_file):
     from spectre import config
 
     monkeypatch.setattr(config.settings, "spectre_data_dir", tmp_path / "sessions")
+    monkeypatch.setattr(config.settings, "github_token", "ghp_test")
     server = SpectreControlServer(scope_dir=scope_file)
     ws = FakeWebSocket()
 

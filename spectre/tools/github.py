@@ -9,6 +9,7 @@ import httpx
 
 from spectre.bus.store import FindingsBus
 from spectre.config import settings
+from spectre.github_auth import github_api_error_message
 from spectre.safety.audit import AuditTimer, audit_tool
 from spectre.safety.scope import ScopeEnforcer, ScopeViolationError
 
@@ -66,11 +67,14 @@ class GitHubClient:
         timer = AuditTimer()
         try:
             repo_resp = await self._client.get(f"/repos/{repo}")
-            repo_resp.raise_for_status()
+            if repo_resp.is_error:
+                self._raise_github_api_error(repo_resp, repo)
+
             repo_data = repo_resp.json()
 
             languages_resp = await self._client.get(f"/repos/{repo}/languages")
-            languages_resp.raise_for_status()
+            if languages_resp.is_error:
+                self._raise_github_api_error(languages_resp, repo)
             languages = languages_resp.json()
 
             contents = await self._walk_contents(repo, "")
@@ -104,6 +108,9 @@ class GitHubClient:
                 duration_ms=timer.elapsed_ms(),
                 metadata={"error": str(exc)},
             )
+            friendly = github_api_error_message(exc, repo)
+            if friendly:
+                raise RuntimeError(friendly) from exc
             raise
 
         await audit_tool(
@@ -188,6 +195,15 @@ class GitHubClient:
             raise RuntimeError(stderr.decode().strip() or "git clone failed")
 
         return temp_dir
+
+    def _raise_github_api_error(self, response: httpx.Response, repo: str) -> None:
+        try:
+            response.raise_for_status()
+        except httpx.HTTPStatusError as exc:
+            friendly = github_api_error_message(exc, repo)
+            if friendly:
+                raise RuntimeError(friendly) from exc
+            raise
 
 
 __all__ = ["DEPENDENCY_MANIFESTS", "GitHubClient", "RepoInventory", "ScopeViolationError"]

@@ -47,6 +47,7 @@ export interface EngagementState {
   scopes: ScopeOption[];
   sessions: SessionSummary[];
   activeSession: string | null;
+  githubTokenConfigured: boolean;
 }
 
 const INITIAL: EngagementState = {
@@ -64,6 +65,7 @@ const INITIAL: EngagementState = {
   scopes: [],
   sessions: [],
   activeSession: null,
+  githubTokenConfigured: true,
 };
 
 function applyEvent(state: EngagementState, event: BusEvent): EngagementState {
@@ -156,6 +158,7 @@ export function useEngagementStream() {
           scopes: (data.scopes as ScopeOption[] | undefined) ?? s.scopes,
           sessions: (data.sessions as SessionSummary[] | undefined) ?? s.sessions,
           activeSession: (data.active_session as string | null | undefined) ?? null,
+          githubTokenConfigured: data.github_token_configured !== false,
         }));
         break;
       case "engagement_launched":
@@ -182,6 +185,14 @@ export function useEngagementStream() {
         setState((s) => ({
           ...s,
           sessions: (data.sessions as SessionSummary[] | undefined) ?? s.sessions,
+        }));
+        break;
+      case "engagement_failed":
+        setState((s) => ({
+          ...s,
+          status: "idle",
+          activeSession: null,
+          error: String(data.message ?? "Engagement failed"),
         }));
         break;
       case "halt_ack":

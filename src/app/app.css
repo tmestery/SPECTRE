@@ -157,6 +157,20 @@ button:disabled {
   font-size: 0.85rem;
 }
 
+.token-warning {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #92400e;
+  border-radius: 8px;
+  background: #1c1408;
+  color: #fcd34d;
+  font-size: 0.85rem;
+}
+
+.token-warning code {
+  color: #fde68a;
+}
+
 .dashboard {
   display: grid;
   grid-template-columns: 1fr 1fr;

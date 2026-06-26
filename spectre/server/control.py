@@ -9,6 +9,7 @@ from websockets.server import WebSocketServerProtocol
 
 from spectre.bus.store import FindingsBus
 from spectre.config import settings
+from spectre.github_auth import github_api_error_message, github_token_configured
 from spectre.orchestrator.loop import Orchestrator, create_engagement
 from spectre.orchestrator.runner import launch_engagement, watch_halt_signal
 from spectre.safety.halt import request_halt
@@ -72,6 +73,7 @@ class SpectreControlServer:
                     "scopes": [scope.__dict__ for scope in self._load_scopes()],
                     "active_session": self._active.session_id if self._active else None,
                     "sessions": [summary.__dict__ for summary in await list_sessions(settings.spectre_data_dir)],
+                    "github_token_configured": github_token_configured(),
                 },
             )
             async for message in websocket:
@@ -138,6 +140,18 @@ class SpectreControlServer:
         if not scope.allows_branch(branch):
             await self._send(websocket, {"type": "error", "message": f"branch not in scope: {branch}"})
             return
+        if not github_token_configured():
+            await self._send(
+                websocket,
+                {
+                    "type": "error",
+                    "message": (
+                        "GITHUB_TOKEN is not set. Add it to .env before starting an audit "
+                        "(e.g. GITHUB_TOKEN=$(gh auth token))."
+                    ),
+                },
+            )
+            return
 
         engagement = create_engagement(repo, branch, scope)
         session_dir = settings.spectre_data_dir / engagement.id
@@ -159,9 +173,20 @@ class SpectreControlServer:
         )
 
         async def cleanup() -> None:
+            failure_message: str | None = None
             try:
                 await handle.task
+            except Exception as exc:
+                failure_message = github_api_error_message(exc, repo) or str(exc)
             finally:
+                if failure_message:
+                    await self._notify_subscribers(
+                        {
+                            "type": "engagement_failed",
+                            "session_id": engagement.id,
+                            "message": failure_message,
+                        }
+                    )
                 if self._active and self._active.session_id == engagement.id:
                     await self._teardown_active()
 
@@ -226,6 +251,18 @@ class SpectreControlServer:
                     dead.append(client)
             for client in dead:
                 self._active.subscribers.discard(client)
+
+    async def _notify_subscribers(self, payload: dict[str, Any]) -> None:
+        if not self._active:
+            return
+        dead: list[WebSocketServerProtocol] = []
+        for client in list(self._active.subscribers):
+            try:
+                await self._send(client, payload)
+            except websockets.ConnectionClosed:
+                dead.append(client)
+        for client in dead:
+            self._active.subscribers.discard(client)
 
     async def _teardown_active(self) -> None:
         if not self._active:
