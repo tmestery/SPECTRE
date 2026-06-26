@@ -51,22 +51,26 @@ Example: `feature/4-recon-agent`
 - Must meet **development-standards** (tests, docs, scope rules)
 - Security-sensitive changes: note scope/safety impact in PR body
 
-### Suggested initial issues (Phase 0–1)
+### Issue tracker (#1–#16)
 
-| Issue | Title |
-|-------|-------|
-| #1 | Phase 0: documentation and agent scaffold |
-| #2 | Scaffold Python + UI monorepo |
-| #3 | Implement Findings Bus and repo finding schemas |
-| #4 | Repo scope enforcement and audit log |
-| #5 | Recon agent + GitHub API client |
-| #6 | Handoff protocol v1 (repo rules) |
-| #7 | VulnHunter agent + gitleaks wrapper |
-| #8 | Exploiter agent + validation layer |
-| #9 | Reporter agent + GitHub permalink reports |
-| #10 | Demo UI shell |
-| #11 | WebSocket event stream |
-| #12 | Intentionally vulnerable sample repo for demos |
+| Issue | Title | Phase |
+|-------|-------|-------|
+| [#1](https://github.com/tmestery/SPECTRE/issues/1) | Phase 0: documentation and agent scaffold | 0 |
+| [#2](https://github.com/tmestery/SPECTRE/issues/2) | Scaffold Python + UI monorepo | 1 |
+| [#3](https://github.com/tmestery/SPECTRE/issues/3) | Findings Bus and repo finding schemas | 1 |
+| [#4](https://github.com/tmestery/SPECTRE/issues/4) | Repo scope enforcement and audit log | 1 |
+| [#5](https://github.com/tmestery/SPECTRE/issues/5) | Orchestrator skeleton and engagement lifecycle | 1 |
+| [#6](https://github.com/tmestery/SPECTRE/issues/6) | Recon agent and GitHub API client | 1 |
+| [#7](https://github.com/tmestery/SPECTRE/issues/7) | Handoff protocol v1 (repo rules) | 1–2 |
+| [#8](https://github.com/tmestery/SPECTRE/issues/8) | VulnHunter agent with gitleaks and osv-scanner | 2 |
+| [#9](https://github.com/tmestery/SPECTRE/issues/9) | Exploiter agent and validation layer | 2 |
+| [#10](https://github.com/tmestery/SPECTRE/issues/10) | Reporter agent and GitHub permalink reports | 3 |
+| [#11](https://github.com/tmestery/SPECTRE/issues/11) | Demo UI shell | 3 |
+| [#12](https://github.com/tmestery/SPECTRE/issues/12) | WebSocket event stream and kill switch | 3 |
+| [#13](https://github.com/tmestery/SPECTRE/issues/13) | Intentionally vulnerable sample repo for demos | 4 |
+| [#14](https://github.com/tmestery/SPECTRE/issues/14) | Handoff decision logging and coordination metrics | 4 |
+| [#15](https://github.com/tmestery/SPECTRE/issues/15) | Engagement replay mode | 4 |
+| [#16](https://github.com/tmestery/SPECTRE/issues/16) | CI pipeline for tests and lint | dev |
 
 ## Tests
 
