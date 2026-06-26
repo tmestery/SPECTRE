@@ -1,0 +1,38 @@
+:root {
+  color-scheme: dark;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  background: #0b0f14;
+  color: #d8e1ea;
+}
+
+body {
+  margin: 0;
+}
+
+.shell {
+  min-height: 100vh;
+  padding: 1.5rem;
+}
+
+.banner h1 {
+  margin: 0;
+  letter-spacing: 0.08em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+section {
+  border: 1px solid #1f2a37;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #111820;
+}
+
+.placeholder {
+  color: #7b8da0;
+}

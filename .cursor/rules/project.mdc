@@ -1,0 +1,38 @@
+---
+description: SPECTRE — multi-agent GitHub repo security auditing conventions
+alwaysApply: true
+---
+
+# SPECTRE
+
+Self-coordinating Penetration and Exploit Crew for Threat Research and Exposure. Multi-agent **GitHub repository auditing** with a visual demo UI.
+
+## Stack
+
+- **Orchestration:** Python 3.12+ (`spectre/`) — asyncio, Pydantic schemas
+- **Demo UI:** Vite + React 18+ + TypeScript (strict) in `src/`
+- **Targets:** Authorized GitHub repos via `scopes/*.yaml`
+- **Tools:** GitHub API, gitleaks, osv-scanner
+- **LLM:** Groq default (see `.env.example`)
+- **Streaming:** WebSocket from orchestrator to UI
+
+## Safety (non-negotiable)
+
+- **Authorized repos only** — every engagement requires `scopes/*.yaml` with `allowed_repos`
+- Tools **must reject** out-of-scope repo slugs before clone or scan
+- Never audit arbitrary public repos without explicit scope authorization
+- Redact secrets in findings, UI, and reports; never commit `GITHUB_TOKEN`
+- Audit log every API call, scan, and handoff
+
+## Architecture rules
+
+- **Bus-first coordination** — agents publish to Findings Bus; no direct agent-to-agent calls
+- **Orchestrator owns handoffs** — logged with human-readable reasons
+- **Sandboxed tools** — wrapped in `spectre/tools/` with repo scope checks and timeouts
+- **Separation** — Python in `spectre/`; UI in `src/`; scope files in `scopes/`
+
+## Scope guard
+
+- v1 is **GitHub repo audit** with four-agent crew and handoff visualization
+- No org-wide sweeps, auto-PR fixes, or mass scanning unless explicitly requested
+- See [AGENTS.md](AGENTS.md) and `.cursor/skills/` for workflows

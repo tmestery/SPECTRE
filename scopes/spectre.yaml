@@ -1,0 +1,17 @@
+name: spectre-audit
+description: Authorized audit of the SPECTRE repository
+allowed_repos:
+  - tmestery/SPECTRE
+allowed_branches:
+  - main
+  - chore/1-phase-0-docs-scaffold
+include_paths:
+  - "**"
+exclude_paths:
+  - "node_modules/**"
+  - "dist/**"
+  - ".git/**"
+  - "data/sessions/**"
+max_commits_depth: 50
+max_duration_minutes: 30
+authorization: owner-confirmed
