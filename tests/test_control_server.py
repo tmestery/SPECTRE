@@ -40,7 +40,7 @@ class FakeWebSocket:
 
 @pytest.fixture
 def scope_file(tmp_path: Path) -> Path:
-    scope = RepoScope(
+    RepoScope(
         name="test-scope",
         allowed_repos=["tmestery/SPECTRE"],
         allowed_branches=["main"],

@@ -1,15 +1,15 @@
 from pathlib import Path
 
 from spectre.agents.base import AgentContext, AgentResult, AgentResultStatus
-from spectre.agents.context import findings_by_types
 from spectre.agents.cognitive import get_cognitive_runtime
+from spectre.agents.context import findings_by_types
 from spectre.agents.reasoning import AgentReasoningLoop, AgentTool
 from spectre.agents.reasoning.prompts import REASONING_RESPONSE_SCHEMA, VULN_HUNTER_REASONING
 from spectre.agents.routing.registry import CognitiveRuntime
 from spectre.bus.store import FindingsBus
-from spectre.schemas.events import BusEvent
-from spectre.schemas.finding import Finding, FindingStatus, FindingType, Severity
 from spectre.safety.scope import redact_text
+from spectre.schemas.events import BusEvent
+from spectre.schemas.finding import Finding, FindingType, Severity
 from spectre.tools.gitleaks import GitleaksScanner
 from spectre.tools.osv_scanner import OsvScanner
 from spectre.tools.workflows import WorkflowAnalyzer

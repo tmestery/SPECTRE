@@ -71,15 +71,18 @@ Mark with `@pytest.mark.integration`; skip in default `pytest` run.
 - Mock WebSocket with `vitest` fake timers
 - Component tests for FindingCard, SeverityBadge, timeline sort
 
-### CI (planned)
+### CI (active)
 
-```yaml
-# .github/workflows/ci.yml (future)
-- pytest tests/unit tests/agents
-- npm test
-- ruff check spectre/
-- tsc --noEmit
-```
+Workflow: [`.github/workflows/ci.yml`](../../.github/workflows/ci.yml)
+
+Runs on every pull request and push to `main`:
+
+| Job | Commands |
+|-----|----------|
+| Python | `pip install -e ".[dev]"` → `ruff check spectre/ tests/` → `pytest -q` |
+| UI | `npm ci` → `npm test` → `npm run build` (includes `tsc -b`) |
+
+CI disables live LLM calls (`LLM_ENABLED=false`). No GitHub or Groq secrets are required. Mypy is intentionally omitted until a typed config lands (tracked separately).
 
 ## Tests
 
@@ -87,4 +90,5 @@ N/A — meta doc.
 
 ## Changelog
 
+- 2026-06-25 — Documented active GitHub Actions CI workflow (#16)
 - 2026-06-25 — Initial test strategy

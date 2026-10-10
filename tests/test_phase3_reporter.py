@@ -2,7 +2,7 @@ import pytest
 
 from spectre.bus.store import FindingsBus
 from spectre.report.generator import ReportGenerator
-from spectre.schemas.events import BusEvent, EventType
+from spectre.schemas.events import BusEvent
 from spectre.schemas.finding import Finding, FindingStatus, FindingType, Severity
 from spectre.schemas.scope import RepoScope
 
@@ -75,8 +75,9 @@ def test_duplicate_findings_deduped(scope):
 
 @pytest.mark.asyncio
 async def test_export_report_missing_session(tmp_path):
-    from spectre.cli import _export_report
     import argparse
+
+    from spectre.cli import _export_report
 
     args = argparse.Namespace(session="eng_missing", format="markdown", output=None)
     code = await _export_report(args)
@@ -87,7 +88,6 @@ async def test_export_report_missing_session(tmp_path):
 async def test_reporter_writes_report_files(tmp_path, bus, scope, monkeypatch):
     from spectre.agents.base import AgentContext
     from spectre.agents.reporter.agent import ReporterAgent
-    from spectre.schemas.events import BusEvent
 
     monkeypatch.chdir(tmp_path)
 

@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from spectre.agents.base import AgentContext
+from spectre.agents.subagents.base import BaseSubagent
 from spectre.agents.subagents.cve_prioritizer import CVEPrioritizerSubagent
 from spectre.agents.subagents.executive_writer import ExecutiveWriterSubagent
 from spectre.agents.subagents.secret_triage import SecretTriageSubagent
 from spectre.agents.subagents.surface_analyst import SurfaceAnalystSubagent
 from spectre.agents.subagents.threat_mapper import ThreatMapperSubagent
 from spectre.agents.subagents.validation_advisor import ValidationAdvisorSubagent
-from spectre.agents.subagents.base import BaseSubagent
 from spectre.bus.store import FindingsBus
 from spectre.llm.client import LLMClient
 from spectre.llm.types import SubagentResult

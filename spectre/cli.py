@@ -34,7 +34,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="Directory containing authorized scope yaml files",
     )
 
-    sessions = sub.add_parser("sessions", help="List saved engagement sessions")
+    sub.add_parser("sessions", help="List saved engagement sessions")
 
     halt = sub.add_parser("halt", help="Halt a running engagement")
     halt.add_argument("--session", required=True, help="Engagement session id")

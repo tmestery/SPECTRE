@@ -1,5 +1,4 @@
 import httpx
-import pytest
 
 from spectre.github_auth import github_api_error_message, github_token_configured
 

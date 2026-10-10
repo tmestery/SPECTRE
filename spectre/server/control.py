@@ -5,7 +5,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-import websockets
 from websockets.exceptions import ConnectionClosed
 from websockets.server import ServerConnection
 
@@ -15,10 +14,9 @@ from spectre.github_auth import github_api_error_message, github_token_configure
 from spectre.orchestrator.loop import Orchestrator, create_engagement
 from spectre.orchestrator.runner import launch_engagement, watch_halt_signal
 from spectre.safety.halt import request_halt
-from spectre.schemas.events import EventType
 from spectre.schemas.scope import RepoScope
-from spectre.server.websocket import RELAYED_EVENTS
 from spectre.server.serve import serve_spectre_ws
+from spectre.server.websocket import RELAYED_EVENTS
 from spectre.sessions import list_sessions, session_exists
 
 logger = logging.getLogger(__name__)

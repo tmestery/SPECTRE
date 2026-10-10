@@ -1,13 +1,12 @@
-from pathlib import Path
 
 from spectre.agents.base import AgentContext, AgentResult, AgentResultStatus
 from spectre.agents.reasoning import AgentReasoningLoop, AgentTool
-from spectre.agents.reasoning.prompts import RECON_REASONING, REASONING_RESPONSE_SCHEMA
+from spectre.agents.reasoning.prompts import REASONING_RESPONSE_SCHEMA, RECON_REASONING
 from spectre.agents.routing.registry import CognitiveRuntime
 from spectre.bus.store import FindingsBus
+from spectre.safety.scope import ScopeEnforcer
 from spectre.schemas.events import BusEvent
 from spectre.schemas.finding import Finding, FindingType, Severity
-from spectre.safety.scope import ScopeEnforcer
 from spectre.tools.github import GitHubClient, RepoInventory
 
 

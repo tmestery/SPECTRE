@@ -5,8 +5,8 @@ from spectre.agents.cognitive import get_cognitive_runtime
 from spectre.agents.exploiter.agent import ExploiterAgent
 from spectre.agents.recon.agent import ReconAgent
 from spectre.agents.reporter.agent import ReporterAgent
-from spectre.agents.vuln_hunter.agent import VulnHunterAgent
 from spectre.agents.routing.registry import CognitiveRuntime
+from spectre.agents.vuln_hunter.agent import VulnHunterAgent
 from spectre.bus.store import FindingsBus
 from spectre.llm.client import LLMClient
 from spectre.schemas.engagement import AgentResult, Engagement

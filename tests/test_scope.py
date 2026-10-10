@@ -1,7 +1,7 @@
 import pytest
 
-from spectre.schemas.scope import RepoScope
 from spectre.safety.scope import ScopeEnforcer, ScopeViolationError, redact_text
+from spectre.schemas.scope import RepoScope
 
 
 def test_allows_in_scope_repo():

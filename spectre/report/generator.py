@@ -3,10 +3,10 @@ from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
 
+from spectre.safety.scope import redact_text
 from spectre.schemas.events import BusEvent, EventType
 from spectre.schemas.finding import Finding, FindingStatus, FindingType, Severity
 from spectre.schemas.scope import RepoScope
-from spectre.safety.scope import redact_text
 
 SECURITY_TYPES = {
     FindingType.SECRET,

@@ -1,14 +1,13 @@
-from datetime import datetime, timezone
 import shutil
-from pathlib import Path
+
 from spectre.bus.store import FindingsBus
 from spectre.orchestrator.handoffs import HandoffEngine
 from spectre.orchestrator.registry import AgentRegistry
 from spectre.safety.halt import clear_halt, is_halt_requested
+from spectre.safety.scope import ScopeEnforcer
 from spectre.schemas.engagement import Engagement, EngagementResult, EngagementStatus
 from spectre.schemas.events import BusEvent, EventType
 from spectre.schemas.scope import RepoScope
-from spectre.safety.scope import ScopeEnforcer
 
 
 class Orchestrator:
