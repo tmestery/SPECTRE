@@ -1,5 +1,6 @@
-import pytest
 from pathlib import Path
+
+import pytest
 
 from spectre.agents.base import AgentContext, AgentResult, AgentResultStatus
 from spectre.bus.store import FindingsBus

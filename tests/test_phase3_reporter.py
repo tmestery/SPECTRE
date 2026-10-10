@@ -75,8 +75,9 @@ def test_duplicate_findings_deduped(scope):
 
 @pytest.mark.asyncio
 async def test_export_report_missing_session(tmp_path):
-    from spectre.cli import _export_report
     import argparse
+
+    from spectre.cli import _export_report
 
     args = argparse.Namespace(session="eng_missing", format="markdown", output=None)
     code = await _export_report(args)

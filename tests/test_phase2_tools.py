@@ -1,5 +1,6 @@
-import pytest
 from pathlib import Path
+
+import pytest
 
 from spectre.tools.gitleaks import GitleaksScanner
 from spectre.tools.workflows import WorkflowAnalyzer
@@ -55,8 +56,8 @@ def test_workflow_analyzer_missing_file():
 
 
 def test_osv_resolve_scan_target_prefers_lockfile(tmp_path):
-    from spectre.tools.osv_scanner import OsvScanner
     from spectre.bus.store import FindingsBus
+    from spectre.tools.osv_scanner import OsvScanner
 
     bus = FindingsBus(tmp_path / "s" / "events.db")
     scanner = OsvScanner(bus, "session")
@@ -69,8 +70,8 @@ def test_osv_resolve_scan_target_prefers_lockfile(tmp_path):
 
 @pytest.mark.asyncio
 async def test_osv_scan_manifest_no_sources_returns_empty(tmp_path, monkeypatch):
-    from spectre.tools.osv_scanner import OsvScanner
     from spectre.bus.store import FindingsBus
+    from spectre.tools.osv_scanner import OsvScanner
 
     monkeypatch.setattr("spectre.tools.osv_scanner.shutil.which", lambda _: "/usr/bin/osv-scanner")
 

@@ -1,8 +1,8 @@
 import json
 from typing import Any
 
-from spectre.agents.subagents.base import BaseSubagent
 from spectre.agents.base import AgentContext
+from spectre.agents.subagents.base import BaseSubagent
 from spectre.bus.store import FindingsBus
 from spectre.llm.client import LLMClient
 from spectre.llm.prompts import SURFACE_ANALYST

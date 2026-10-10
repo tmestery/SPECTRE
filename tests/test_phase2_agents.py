@@ -1,8 +1,8 @@
 import pytest
 
+from spectre.agents.base import AgentContext
 from spectre.agents.exploiter.agent import ExploiterAgent
 from spectre.agents.vuln_hunter.agent import VulnHunterAgent
-from spectre.agents.base import AgentContext
 from spectre.bus.store import FindingsBus
 from spectre.schemas.events import BusEvent
 from spectre.schemas.finding import Finding, FindingType, Severity
