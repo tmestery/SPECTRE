@@ -3,9 +3,8 @@ from dataclasses import dataclass
 
 from spectre.bus.store import FindingsBus
 from spectre.orchestrator.loop import Orchestrator
-from spectre.safety.halt import clear_halt, is_halt_requested, request_halt
+from spectre.safety.halt import clear_halt, is_halt_requested
 from spectre.schemas.engagement import Engagement, EngagementResult
-from spectre.schemas.events import EventType
 
 
 @dataclass

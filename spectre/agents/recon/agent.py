@@ -1,4 +1,3 @@
-from pathlib import Path
 
 from spectre.agents.base import AgentContext, AgentResult, AgentResultStatus
 from spectre.agents.reasoning import AgentReasoningLoop, AgentTool

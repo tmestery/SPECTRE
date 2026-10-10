@@ -8,7 +8,6 @@ from spectre.bus.store import FindingsBus
 from spectre.config import settings
 from spectre.llm.audit import audit_llm
 from spectre.llm.client import LLMClient
-from spectre.agents.reasoning.prompts import REASONING_RESPONSE_SCHEMA
 from spectre.llm.prompts import SPECTRE_SYSTEM
 from spectre.llm.types import LLMMessage
 from spectre.schemas.events import BusEvent

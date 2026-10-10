@@ -2,7 +2,7 @@ import pytest
 
 from spectre.orchestrator.handoffs import HandoffEngine
 from spectre.schemas.engagement import AgentResult, AgentResultStatus, Engagement
-from spectre.schemas.finding import Finding, FindingType, Severity
+from spectre.schemas.finding import Finding, FindingType
 from spectre.schemas.scope import RepoScope
 
 

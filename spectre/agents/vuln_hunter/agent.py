@@ -8,7 +8,7 @@ from spectre.agents.reasoning.prompts import REASONING_RESPONSE_SCHEMA, VULN_HUN
 from spectre.agents.routing.registry import CognitiveRuntime
 from spectre.bus.store import FindingsBus
 from spectre.schemas.events import BusEvent
-from spectre.schemas.finding import Finding, FindingStatus, FindingType, Severity
+from spectre.schemas.finding import Finding, FindingType, Severity
 from spectre.safety.scope import redact_text
 from spectre.tools.gitleaks import GitleaksScanner
 from spectre.tools.osv_scanner import OsvScanner

@@ -24,7 +24,7 @@ Issue → branch → commits → PR → review → merge
 2. Branch from `main`: `feature|fix|chore/<issue>-<slug>`.
 3. Make focused commits with clear imperative messages.
 4. Open PR against `main`; body includes summary, test plan, `Closes #<n>`.
-5. Merge only after review and green checks.
+5. Merge only after review and green CI checks ([`.github/workflows/ci.yml`](../../.github/workflows/ci.yml): ruff, pytest, vitest, UI build).
 
 ### Branch naming
 
@@ -77,5 +77,7 @@ Example: `feature/4-recon-agent`
 N/A — process policy.
 
 ## Changelog
+
+- 2026-06-25 — CI workflow required for merge (#16)
 
 - 2026-06-25 — Initial git workflow doc
