@@ -1,13 +1,19 @@
+import logging
 import shutil
+from pathlib import Path
 
 from spectre.bus.store import FindingsBus
+from spectre.config import settings
 from spectre.orchestrator.handoffs import HandoffEngine
 from spectre.orchestrator.registry import AgentRegistry
+from spectre.research.metrics import export_session_metrics
 from spectre.safety.halt import clear_halt, is_halt_requested
 from spectre.safety.scope import ScopeEnforcer
 from spectre.schemas.engagement import Engagement, EngagementResult, EngagementStatus
 from spectre.schemas.events import BusEvent, EventType
 from spectre.schemas.scope import RepoScope
+
+logger = logging.getLogger(__name__)
 
 
 class Orchestrator:
@@ -85,6 +91,12 @@ class Orchestrator:
                 },
             )
         )
+
+        session_dir = Path(settings.spectre_data_dir) / engagement.id
+        try:
+            await export_session_metrics(self.bus, engagement.id, session_dir)
+        except (ValueError, OSError):
+            logger.exception("Failed to export coordination metrics for %s", engagement.id)
 
         return EngagementResult(
             engagement_id=engagement.id,
