@@ -2,11 +2,11 @@
 
 **Status:** active  
 **Updated:** 2026-06-25  
-**Related:** [local-arch-agent-crew.md](local-arch-agent-crew.md), [local-target-github-repo.md](local-target-github-repo.md)
+**Related:** [local-arch-agent-crew.md](local-arch-agent-crew.md), [local-arch-judging-agents.md](local-arch-judging-agents.md), [local-target-github-repo.md](local-target-github-repo.md)
 
 ## Summary
 
-The handoff protocol defines **when** the orchestrator activates the next agent and **why** during a GitHub repo audit. Every decision is logged as a `handoff_decision` event — the primary research artifact for studying agent coordination.
+The handoff protocol defines **when** the orchestrator activates the next agent and **why** during a GitHub repo audit. Every decision is logged as a `handoff_decision` event — the primary research artifact for studying agent coordination. Planned **Handoff Judge** agents publish advisory `handoff_verdict` events (approve / defer / reject) without changing v1 deterministic transitions — see [local-arch-judging-agents.md](local-arch-judging-agents.md).
 
 ## Context
 
@@ -83,6 +83,16 @@ when:
 rationale: "Time limit reached; generating partial report."
 ```
 
+### Judge touchpoints (planned, advisory v1)
+
+| After | Judge | Effect on handoff |
+|-------|-------|-------------------|
+| VulnHunter / Exploiter batch | Finding Judge | Labels findings; does not change R1–R4 |
+| Each `handoff_decision` | Handoff Judge | Emits `handoff_verdict`; orchestrator continues |
+| Reporter sections | Report Judge | Emits `report_verdict`; report still exports |
+
+Blocking mode (v2) may pause transitions on `reject` for critical findings only — not enabled in v1.
+
 ### Handoff decision event (example)
 
 ```json
@@ -109,5 +119,6 @@ rationale: "Time limit reached; generating partial report."
 
 ## Changelog
 
+- 2026-06-25 — Added advisory judge touchpoints (#22)
 - 2026-06-25 — Rewrote rules for GitHub repo auditing
 - 2026-06-25 — Initial handoff protocol

@@ -2,11 +2,11 @@
 
 **Status:** active  
 **Updated:** 2026-06-25  
-**Related:** [local-arch-handoff-protocol.md](local-arch-handoff-protocol.md), [local-target-github-repo.md](local-target-github-repo.md)
+**Related:** [local-arch-handoff-protocol.md](local-arch-handoff-protocol.md), [local-arch-judging-agents.md](local-arch-judging-agents.md), [local-target-github-repo.md](local-target-github-repo.md)
 
 ## Summary
 
-SPECTRE's agent crew audits authorized GitHub repos through four roles — Recon, VulnHunter, Exploiter, and Reporter. Agents never communicate directly; all coordination flows through the Findings Bus and Orchestrator.
+SPECTRE's agent crew audits authorized GitHub repos through four roles — Recon, VulnHunter, Exploiter, and Reporter. Agents never communicate directly; all coordination flows through the Findings Bus and Orchestrator. A planned **judging layer** (Finding / Handoff / Report judges) publishes advisory verdicts — see [local-arch-judging-agents.md](local-arch-judging-agents.md).
 
 ## Context
 
@@ -35,6 +35,18 @@ sequenceDiagram
     Rep->>B: publish report_section
 ```
 
+### Judging layer (planned)
+
+```mermaid
+flowchart LR
+    Crew[AuditCrew] --> Bus[FindingsBus]
+    Bus --> Judges[Finding_Handoff_Report_Judges]
+    Judges --> Bus
+    Judges -. advisory .-> Orch[Orchestrator]
+```
+
+Judges are orchestrator-scheduled, bus-first, and **advisory in v1** (do not block handoffs). Full ADR: [local-arch-judging-agents.md](local-arch-judging-agents.md).
+
 ### Agent specifications
 
 | Agent | Status | Handoff trigger | Max iterations | Tool access |
@@ -55,5 +67,6 @@ sequenceDiagram
 
 ## Changelog
 
+- 2026-06-25 — Documented planned judging layer (#22)
 - 2026-06-25 — Updated crew for GitHub repo auditing
 - 2026-06-25 — Initial crew design
