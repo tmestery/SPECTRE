@@ -95,7 +95,9 @@ src/
   target/
   report/
 scopes/               # allowed_repos per engagement
-docs/local/
+docs/
+  local/              # project docs
+  assets/             # branding (logo.png) — see local-dev-repo-layout.md
 tests/
 ```
 
@@ -118,6 +120,7 @@ tests/
 | Handoffs | [local-arch-handoff-protocol.md](local-arch-handoff-protocol.md) |
 | GitHub target | [local-target-github-repo.md](local-target-github-repo.md) |
 | Safety | [local-safety-lab-scope.md](local-safety-lab-scope.md) |
+| Repo root layout | [local-dev-repo-layout.md](local-dev-repo-layout.md) |
 
 ## Tests
 
@@ -125,5 +128,6 @@ Test infrastructure planned in Phase 1. See [local-test-strategy.md](local-test-
 
 ## Changelog
 
+- 2026-06-25 — Documented `docs/assets/` branding path (#40)
 - 2026-06-25 — Pivot to GitHub repo auditing as primary target
 - 2026-06-25 — Initial architecture doc

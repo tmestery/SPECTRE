@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./logo.png" alt="SPECTRE logo" width="520">
+  <img src="./docs/assets/logo.png" alt="SPECTRE logo" width="520">
 </p>
 
 <h1 align="center">SPECTRE</h1>

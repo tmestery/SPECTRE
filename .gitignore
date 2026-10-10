@@ -1,7 +1,6 @@
 .venv/
 node_modules/
 dist/
-.venv/
 __pycache__/
 *.pyc
 .pytest_cache/
@@ -15,9 +14,9 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 *.tsbuildinfo
-reports/*.pdf
-reports/*.html
-reports/*.md
+
+# Generated engagement outputs (keep directory placeholders)
+reports/*
 !reports/.gitkeep
 data/sessions/*
 !data/sessions/.gitkeep
