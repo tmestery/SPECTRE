@@ -61,6 +61,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="Directory for handoffs.jsonl and metrics.json (default: session data dir)",
     )
 
+    replay = sub.add_parser("replay", help="Replay a completed engagement from its event log")
+    replay.add_argument("--session", required=True, help="Engagement session id")
+    replay.add_argument(
+        "--speed",
+        type=float,
+        default=0.0,
+        help="Playback speed (0=immediate, 1=real-time, 2=2x faster)",
+    )
+    replay.add_argument(
+        "--ws",
+        action="store_true",
+        help="Stream replayed events to WebSocket clients",
+    )
+
     return parser
 
 
@@ -175,6 +189,61 @@ async def _export_report(args: argparse.Namespace) -> int:
         await bus.close()
 
 
+async def _replay_session(args: argparse.Namespace) -> int:
+    from spectre.research.replay import ReplayWebSocketServer, replay_session
+
+    if args.speed < 0:
+        print("error: --speed must be >= 0", file=sys.stderr)
+        return 1
+
+    ws_server: ReplayWebSocketServer | None = None
+    server = None
+
+    async def on_event(event) -> None:
+        print(json.dumps(event.model_dump(mode="json")), flush=True)
+        if ws_server is not None:
+            await ws_server.broadcast(event)
+
+    try:
+        if args.ws:
+            ws_server = ReplayWebSocketServer(args.session)
+            server = await ws_server.start()
+            print(
+                json.dumps(
+                    {
+                        "status": "replaying",
+                        "session_id": args.session,
+                        "speed": args.speed,
+                        "ws_host": settings.ws_host,
+                        "ws_port": settings.ws_port,
+                    }
+                ),
+                flush=True,
+            )
+            await asyncio.sleep(0.25)
+
+        events = await replay_session(
+            settings.spectre_data_dir,
+            args.session,
+            speed=args.speed,
+            on_event=on_event,
+        )
+        print(
+            json.dumps({"status": "replay_complete", "session_id": args.session, "events": len(events)}),
+            flush=True,
+        )
+        return 0
+    except FileNotFoundError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    finally:
+        if ws_server is not None and server is not None:
+            await ws_server.stop(server)
+
+
 async def _export_metrics(args: argparse.Namespace) -> int:
     from spectre.research.metrics import export_session_metrics
 
@@ -236,6 +305,9 @@ def main() -> None:
 
     if args.command == "metrics":
         raise SystemExit(asyncio.run(_export_metrics(args)))
+
+    if args.command == "replay":
+        raise SystemExit(asyncio.run(_replay_session(args)))
 
     parser.print_help()
     raise SystemExit(1)

@@ -117,6 +117,13 @@ class SpectreControlServer:
                 },
             )
             return
+        if msg_type == "replay_session":
+            await self._replay_session(
+                websocket,
+                session_id=str(data.get("session_id", "")),
+                speed=float(data.get("speed", 0.0)),
+            )
+            return
         await self._send(websocket, {"type": "error", "message": f"unknown message type: {msg_type}"})
 
     async def _start_engagement(
@@ -208,6 +215,52 @@ class SpectreControlServer:
                 "scope_path": scope_path,
             },
         )
+
+    async def _replay_session(
+        self,
+        websocket: ServerConnection,
+        *,
+        session_id: str,
+        speed: float,
+    ) -> None:
+        from spectre.research.replay import replay_session
+
+        if not session_id:
+            await self._send(websocket, {"type": "error", "message": "session_id is required"})
+            return
+        if self._active:
+            await self._send(
+                websocket,
+                {"type": "error", "message": "cannot replay while an engagement is active"},
+            )
+            return
+        try:
+            await self._send(
+                websocket,
+                {"type": "replay_started", "session_id": session_id, "speed": speed},
+            )
+
+            async def on_event(event) -> None:
+                await self._send(websocket, event.model_dump(mode="json"))
+
+            events = await replay_session(
+                settings.spectre_data_dir,
+                session_id,
+                speed=speed,
+                on_event=on_event,
+            )
+            await self._send(
+                websocket,
+                {
+                    "type": "replay_complete",
+                    "session_id": session_id,
+                    "events": len(events),
+                },
+            )
+        except FileNotFoundError:
+            await self._send(websocket, {"type": "error", "message": f"session not found: {session_id}"})
+        except ValueError as exc:
+            await self._send(websocket, {"type": "error", "message": str(exc)})
 
     async def _subscribe(self, websocket: ServerConnection, session_id: str) -> None:
         if not session_id:

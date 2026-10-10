@@ -96,9 +96,12 @@ python -m spectre.cli halt --session <id>
 # Export report
 python -m spectre.cli report --session <id> --format markdown
 
-# Replay from event log (Phase 4)
+# Replay from event log (paced; no agents/tools)
 python -m spectre.cli replay --session <id>
+python -m spectre.cli replay --session <id> --speed 1 --ws
 ```
+
+See [local-research-replay.md](local-research-replay.md).
 
 ### WebSocket API (v1)
 
@@ -131,4 +134,5 @@ Default: `ws://localhost:8765/sessions/<id>`
 
 ## Changelog
 
+- 2026-06-25 — Documented `spectre replay` paced playback (#15)
 - 2026-06-25 — Initial orchestrator design
