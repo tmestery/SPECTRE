@@ -35,6 +35,7 @@ local-<area>-<topic>.md
 | [local-arch-tech-stack.md](local-arch-tech-stack.md) | Python, React, GitHub API, Groq |
 | [local-dev-standards.md](local-dev-standards.md) | Async I/O, tests, documentation rules |
 | [local-dev-git-workflow.md](local-dev-git-workflow.md) | Issues, branches, PRs |
+| [local-dev-repo-layout.md](local-dev-repo-layout.md) | Root hygiene, branding under `docs/assets/` |
 | [local-safety-lab-scope.md](local-safety-lab-scope.md) | Repo allowlists, audit, redaction |
 | [local-target-github-repo.md](local-target-github-repo.md) | **Primary v1 target** — GitHub repo audits |
 | [local-target-dvwa.md](local-target-dvwa.md) | ~~DVWA Docker lab~~ (deprecated) |
