@@ -66,14 +66,24 @@ class FakeRecon:
 
 
 @pytest.mark.asyncio
-async def test_orchestrator_runs_recon_to_reporter_chain(tmp_path):
+async def test_orchestrator_runs_recon_to_reporter_chain(tmp_path, monkeypatch):
+    monkeypatch.setattr("spectre.tools.gitleaks.shutil.which", lambda _: None)
+
+    async def _no_github(*_args, **_kwargs):
+        raise AssertionError("GitHubClient must not be called in offline orchestrator tests")
+
+    monkeypatch.setattr("spectre.tools.github.GitHubClient.inventory_repo", _no_github)
+
     scope = RepoScope(name="t", allowed_repos=["tmestery/SPECTRE"])
     engagement = create_engagement("tmestery/SPECTRE", "main", scope)
     bus = FindingsBus(tmp_path / engagement.id / "events.db")
     await bus.connect()
 
+    workspace = tmp_path / "clone"
+    workspace.mkdir()
+
     orchestrator = Orchestrator(bus)
-    orchestrator.registry._agents["recon"] = FakeRecon()
+    orchestrator.registry._agents["recon"] = FakeRecon(workspace)
 
     result = await orchestrator.run(engagement)
     findings = await bus.all_findings()
@@ -86,6 +96,11 @@ async def test_orchestrator_runs_recon_to_reporter_chain(tmp_path):
 @pytest.mark.asyncio
 async def test_orchestrator_runs_phase2_chain_with_validation(tmp_path, monkeypatch):
     monkeypatch.setattr("spectre.tools.gitleaks.shutil.which", lambda _: None)
+
+    async def _no_github(*_args, **_kwargs):
+        raise AssertionError("GitHubClient must not be called in offline orchestrator tests")
+
+    monkeypatch.setattr("spectre.tools.github.GitHubClient.inventory_repo", _no_github)
 
     scope = RepoScope(name="t", allowed_repos=["tmestery/SPECTRE"])
     engagement = create_engagement("tmestery/SPECTRE", "main", scope)
