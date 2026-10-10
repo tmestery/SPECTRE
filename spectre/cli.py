@@ -53,6 +53,14 @@ def build_parser() -> argparse.ArgumentParser:
         help="Write report to this path (default: reports/<session>.<ext>)",
     )
 
+    metrics = sub.add_parser("metrics", help="Export coordination metrics for a session")
+    metrics.add_argument("--session", required=True, help="Engagement session id")
+    metrics.add_argument(
+        "--output",
+        type=Path,
+        help="Directory for handoffs.jsonl and metrics.json (default: session data dir)",
+    )
+
     return parser
 
 
@@ -167,6 +175,41 @@ async def _export_report(args: argparse.Namespace) -> int:
         await bus.close()
 
 
+async def _export_metrics(args: argparse.Namespace) -> int:
+    from spectre.research.metrics import export_session_metrics
+
+    session_dir = settings.spectre_data_dir / args.session
+    db_path = session_dir / "events.db"
+    if not db_path.exists():
+        print(f"error: session not found: {args.session}", file=sys.stderr)
+        return 1
+
+    out_dir = args.output or session_dir
+    bus = FindingsBus(db_path)
+    await bus.connect()
+    try:
+        metrics = await export_session_metrics(bus, args.session, out_dir)
+        print(
+            json.dumps(
+                {
+                    "session_id": args.session,
+                    "handoffs": str(out_dir / "handoffs.jsonl"),
+                    "metrics": str(out_dir / "metrics.json"),
+                    "summary": metrics.to_dict(),
+                },
+                indent=2,
+                default=str,
+            ),
+            flush=True,
+        )
+        return 0
+    except ValueError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    finally:
+        await bus.close()
+
+
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
@@ -190,6 +233,9 @@ def main() -> None:
 
     if args.command == "report":
         raise SystemExit(asyncio.run(_export_report(args)))
+
+    if args.command == "metrics":
+        raise SystemExit(asyncio.run(_export_metrics(args)))
 
     parser.print_help()
     raise SystemExit(1)
