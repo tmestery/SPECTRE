@@ -28,6 +28,7 @@ local-<area>-<topic>.md
 | [local-arch-findings-bus.md](local-arch-findings-bus.md) | Shared memory, event schema, pub/sub |
 | [local-arch-handoff-protocol.md](local-arch-handoff-protocol.md) | Coordination and handoff rules |
 | [local-research-metrics.md](local-research-metrics.md) | Handoff JSONL + coordination metrics export |
+| [local-research-replay.md](local-research-replay.md) | Paced engagement replay from event log |
 | [local-arch-llm-layer.md](local-arch-llm-layer.md) | LLM client, routers, and subagents |
 | [local-arch-orchestrator.md](local-arch-orchestrator.md) | Crew loop, engagement lifecycle |
 | [local-arch-tech-stack.md](local-arch-tech-stack.md) | Python, React, GitHub API, Groq |

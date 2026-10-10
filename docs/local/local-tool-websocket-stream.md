@@ -29,7 +29,10 @@ Server acknowledges with `halt_ack` and writes `data/sessions/<id>/halt.signal` 
 ```bash
 python -m spectre.cli run --repo owner/repo --scope scopes/x.yaml --ws
 python -m spectre.cli halt --session eng_…
+python -m spectre.cli replay --session eng_… --speed 1 --ws
 ```
+
+Replay uses `ReplayWebSocketServer` (read-only fan-out). Instant past-session load via control `subscribe` remains a catch-up dump; paced demo playback is `spectre replay`.
 
 ## Tests
 
@@ -40,4 +43,5 @@ python -m spectre.cli halt --session eng_…
 
 ## Changelog
 
+- 2026-06-25 — Documented replay WebSocket path (#15)
 - 2026-06-26 — Phase 3 WebSocket + halt signal file
