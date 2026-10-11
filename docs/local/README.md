@@ -35,6 +35,7 @@ local-<area>-<topic>.md
 | [local-arch-orchestrator.md](local-arch-orchestrator.md) | Crew loop, engagement lifecycle |
 | [local-arch-tech-stack.md](local-arch-tech-stack.md) | Python, React, GitHub API, Groq |
 | [local-dev-standards.md](local-dev-standards.md) | Async I/O, tests, documentation rules |
+| [local-dev-readme.md](local-dev-readme.md) | Root README maintenance notes |
 | [local-dev-git-workflow.md](local-dev-git-workflow.md) | Issues, branches, PRs |
 | [local-dev-repo-layout.md](local-dev-repo-layout.md) | Root hygiene, branding under `docs/assets/` |
 | [local-safety-lab-scope.md](local-safety-lab-scope.md) | Repo allowlists, audit, redaction |
