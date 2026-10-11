@@ -22,3 +22,7 @@ export function agentColor(agentId: string): string {
 export function isJudgeAgent(agentId: string): boolean {
   return AGENT_META[agentId]?.role === "judge" || agentId.endsWith("_judge");
 }
+
+export function isCrewAgent(agentId: string): boolean {
+  return AGENT_META[agentId]?.role === "crew";
+}

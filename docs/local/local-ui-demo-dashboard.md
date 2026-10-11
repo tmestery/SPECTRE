@@ -1,97 +1,81 @@
 # local-ui-demo-dashboard
 
 **Status:** active  
-**Updated:** 2026-10-10  
-**Related:** [local-arch-orchestrator.md](local-arch-orchestrator.md), [local-arch-judging-agents.md](local-arch-judging-agents.md), [local-agent-reporter.md](local-agent-reporter.md), issues #28, #34
+**Updated:** 2026-10-11  
+**Related:** [local-arch-orchestrator.md](local-arch-orchestrator.md), [local-arch-judging-agents.md](local-arch-judging-agents.md), issue #57
 
 ## Summary
 
-The demo UI is SPECTRE's visual centerpiece — a real-time dashboard showing agent conversations, findings with optional judge verdicts, handoff graph, repo status, and live report preview as the crew audits a GitHub repository.
+The demo UI is a **phased cinematic experience**: branded boot splash → setup → focused live audit stage with progress rail → auto-transition into a scrollable analytics/results page. The old always-on 2×2 analytics grid is the *finale*, not the live view.
 
 ## Context
 
-The research demo must be **compelling to watch**. Viewers should see agents talk, findings accumulate, handoffs occur with rationale, and advisory judges surface uphold/approve/accept-style badges — without exposing raw LLM chain-of-thought.
+Viewers should watch the crew work with calm immersion (one primary focus), then review full findings, handoffs, and report after the engagement ends.
 
-## Implementation
+## Experience model
 
-### Visual identity
-
-Design tokens live as CSS variables in `src/app/app.css`:
-
-| Token | Role |
-|-------|------|
-| `--bg-base` / `--bg-panel` | Charcoal atmosphere + translucent panels |
-| `--signal` | Copper accent (brand / active state) |
-| `--font-display` | Syne — brand + panel titles |
-| `--font-body` | Source Sans 3 |
-| `--font-mono` | IBM Plex Mono — evidence, chips, status |
-
-Motion: panel rise-in, chat/handoff slide-in, running status pulse. Respects `prefers-reduced-motion`.
-
-### Layout
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  SPECTRE (hero brand)     repo @ branch · scope    [status] │
-├─────────────────────────────────────────────────────────────┤
-│  Start audit controls · Halt · Past sessions                │
-├──────────────────────┬──────────────────────────────────────┤
-│  CREW CHANNEL        │  FINDINGS (+ judgment badges)        │
-│  HANDOFFS (+ verdict)│  LIVE REPORT (+ report verdict)      │
-└──────────────────────┴──────────────────────────────────────┘
+```mermaid
+flowchart LR
+  boot[Boot_Splash] --> setup[Idle_Setup]
+  setup --> live[Live_Cinema]
+  live --> beat[Complete_Beat]
+  beat --> analytics[Analytics_Page]
+  live --> haltBeat[Halt_Beat]
+  haltBeat --> analytics
+  analytics --> setup
 ```
 
-### Source layout
+| Phase | Focus |
+|-------|--------|
+| **Boot** | Full-viewport SPECTRE mark until WebSocket `server_hello` + min dwell (~1s) |
+| **Setup** | Repo / branch / scope + Start; past sessions load jump to analytics |
+| **Live cinema** | Progress rail + active agent stage + latest discovery + Halt |
+| **Complete beat** | Brief “Audit complete” / “Halted”, then auto-advance |
+| **Analytics** | Scrollable summary → findings → handoffs → report → optional crew log |
+
+## Live cinema rules
+
+- Crew stages only: Recon → VulnHunter → Exploiter → Reporter
+- Judges do not steal the progress rail; muted in full crew log on analytics
+- Cap live feed to ~4 newest crew messages
+- One latest discovery card + count badge
+- Soft motion; `prefers-reduced-motion` respected
+
+## Source layout
 
 ```
 src/
-  app/App.tsx, app.css
-  crew/AgentChatPanel.tsx, AgentAvatar.tsx, HandoffGraph.tsx
-  findings/FindingsTimeline.tsx, FindingCard.tsx, SeverityBadge.tsx, VerdictBadge.tsx
-  target/ScopeBanner.tsx, HaltButton.tsx
-  report/LiveReportPanel.tsx
-  hooks/useEngagementStream.ts
-  lib/agents.ts
+  app/App.tsx, BootSplash.tsx, CompleteBeat.tsx, SetupView.tsx, app.css
+  crew/LiveCinemaView.tsx, ProgressRail.tsx, LiveStage.tsx, LatestDiscovery.tsx
+  report/AnalyticsPage.tsx, LiveReportPanel.tsx
+  findings/…, hooks/useEngagementStream.ts, lib/crewStages.ts
 ```
 
-### WebSocket event routing
+## WebSocket routing
 
-| Event type | UI effect |
-|------------|-----------|
-| `agent_message` | Crew channel (judge agents get distinct styling) |
-| `finding` (security types) | Findings timeline |
-| `finding` (`type=judgment`) | Matched onto cards via `evidence.reviewed_finding_id` |
-| `handoff_decision` | Handoff list (stores event `id`) |
-| `handoff_verdict` | Badge on matching `decision_id` |
-| `report_section` | Live report |
-| `report_verdict` | Badge on report / sections |
-| `engagement_halted` / `complete` | Banner status |
-
-Missing verdicts degrade to “No verdict” or omit the badge.
-
-### Agent visual identity
-
-| Agent | Role | Accent |
-|-------|------|--------|
-| Recon | crew | blue |
-| VulnHunter | crew | copper |
-| Exploiter | crew | rust |
-| Reporter | crew | green |
-| Finding / Handoff / Report Judge | judge | muted bronze + `judge` chip |
+| Event | Effect |
+|-------|--------|
+| `agent_activated` | Sets `activeAgent` (crew only) for progress rail |
+| `agent_message` | Live feed + crew `activeAgent` fallback |
+| `finding` | Latest discovery / analytics timeline; judgments matched by id |
+| `handoff_decision` / `handoff_verdict` | Analytics handoffs |
+| `report_section` / `report_verdict` | Analytics report |
+| `engagement_complete` / `halted` | Complete beat → analytics |
 
 ## Tests
 
 | Case | Type |
 |------|------|
-| FindingCard severity + GitHub link | Positive |
-| VerdictBadge known / unknown / missing | Positive + negatives |
-| applyEvent attaches handoff + report verdicts | Positive |
-| applyEvent ignores unknown decision_id | Negative |
-| Judgments stored separately from findings | Positive |
-| HaltButton disabled when idle | Negative |
-| HandoffGraph empty state | Negative |
+| Boot splash connecting / retry | Positive |
+| `agent_activated` sets crew activeAgent | Positive |
+| Judge activation ignored for stage | Negative |
+| Progress rail unknown agent safe | Negative |
+| resolveActiveCrewAgent fallbacks | Positive + negatives |
+| Message feed capped / judges skipped | Negative |
+| Complete beat copy | Positive |
 
 ## Changelog
 
+- 2026-10-11 — Boot → live cinema → analytics finale (#57)
 - 2026-10-10 — Visual redesign + judge verdict badges (#28, #34)
 - 2026-06-25 — Initial demo UI doc
