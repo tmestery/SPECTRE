@@ -70,7 +70,18 @@ class LLMClient:
 
         timer = AuditTimer()
         response = await self._client.post("/chat/completions", json=payload)
-        response.raise_for_status()
+        if response.is_error:
+            detail = response.text[:300]
+            try:
+                err = response.json().get("error") or {}
+                if isinstance(err, dict) and err.get("message"):
+                    detail = str(err["message"])
+            except Exception:
+                pass
+            raise RuntimeError(
+                f"LLM request failed ({self.provider} {self.model}): "
+                f"HTTP {response.status_code} — {detail}"
+            )
         data = response.json()
         choice = data["choices"][0]["message"]["content"]
         usage = data.get("usage", {})

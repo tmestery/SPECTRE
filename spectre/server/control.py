@@ -10,6 +10,7 @@ from websockets.exceptions import ConnectionClosed
 
 from spectre.bus.store import FindingsBus
 from spectre.config import settings
+from spectre.debug_ndjson import dbg
 from spectre.github_auth import github_api_error_message, github_token_configured
 from spectre.orchestrator.loop import Orchestrator, create_engagement
 from spectre.orchestrator.runner import launch_engagement, watch_halt_signal
@@ -166,6 +167,25 @@ class SpectreControlServer:
             )
             return
 
+        # #region agent log
+        tok = settings.github_token
+        dbg(
+            "A",
+            "control.py:_start_engagement",
+            "start_engagement_request",
+            {
+                "repo": repo,
+                "repo_repr": repr(repo),
+                "branch": branch,
+                "scope_path": scope_path,
+                "token_configured": github_token_configured(),
+                "token_len": len(tok),
+                "token_prefix": tok[:4] if tok else "",
+                "has_whitespace": any(ch.isspace() for ch in tok),
+            },
+        )
+        # #endregion
+
         engagement = create_engagement(repo, branch, scope)
         session_dir = settings.spectre_data_dir / engagement.id
         bus = FindingsBus(session_dir / "events.db")
@@ -191,6 +211,27 @@ class SpectreControlServer:
                 await handle.task
             except Exception as exc:
                 failure_message = github_api_error_message(exc, repo) or str(exc)
+                # #region agent log
+                dbg(
+                    "E",
+                    "control.py:cleanup",
+                    "engagement_failed",
+                    {
+                        "repo": repo,
+                        "exc_type": type(exc).__name__,
+                        "failure_message": (failure_message or "")[:300],
+                        "mapped_by_github_api_error_message": bool(
+                            github_api_error_message(exc, repo)
+                        ),
+                        "request_host": (
+                            str(getattr(getattr(exc, "request", None), "url", "")).split("/")[2]
+                            if getattr(exc, "request", None)
+                            else None
+                        ),
+                    },
+                    run_id="post-fix",
+                )
+                # #endregion
             finally:
                 if failure_message:
                     await self._notify_subscribers(

@@ -52,23 +52,32 @@ class VulnHunterAgent:
         state = {"secrets": 0, "vulns": 0, "misconfigs": 0}
 
         if self._cognitive.llm.available:
-            tools = self._build_tools(ctx, bus, workspace, findings, state)
-            reasoning = AgentReasoningLoop(self._cognitive.llm)
-            result = await reasoning.run(
-                ctx,
-                bus,
-                system_prompt=VULN_HUNTER_REASONING,
-                tools=tools,
-                initial_context=recon_context,
-                response_schema=REASONING_RESPONSE_SCHEMA,
-            )
-            all_findings = await bus.all_findings()
-            await self._run_subagents(ctx, bus, all_findings)
-            return AgentResult(
-                status=AgentResultStatus.COMPLETE if result.completed else AgentResultStatus.EXHAUSTED,
-                message=result.final_message or "vuln_hunter complete",
-                iterations_used=len(result.steps),
-            )
+            try:
+                tools = self._build_tools(ctx, bus, workspace, findings, state)
+                reasoning = AgentReasoningLoop(self._cognitive.llm)
+                result = await reasoning.run(
+                    ctx,
+                    bus,
+                    system_prompt=VULN_HUNTER_REASONING,
+                    tools=tools,
+                    initial_context=recon_context,
+                    response_schema=REASONING_RESPONSE_SCHEMA,
+                )
+                all_findings = await bus.all_findings()
+                await self._run_subagents(ctx, bus, all_findings)
+                return AgentResult(
+                    status=AgentResultStatus.COMPLETE if result.completed else AgentResultStatus.EXHAUSTED,
+                    message=result.final_message or "vuln_hunter complete",
+                    iterations_used=len(result.steps),
+                )
+            except Exception as exc:
+                await bus.publish(
+                    BusEvent.agent_message(
+                        ctx.session_id,
+                        self.id,
+                        f"LLM unavailable ({exc}); falling back to deterministic scans.",
+                    )
+                )
 
         return await self._run_deterministic(ctx, bus, workspace, findings)
 

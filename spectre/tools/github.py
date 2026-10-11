@@ -9,6 +9,7 @@ import httpx
 
 from spectre.bus.store import FindingsBus
 from spectre.config import settings
+from spectre.debug_ndjson import dbg
 from spectre.github_auth import github_api_error_message
 from spectre.safety.audit import AuditTimer, audit_tool
 from spectre.safety.scope import ScopeEnforcer, ScopeViolationError
@@ -55,6 +56,20 @@ class GitHubClient:
         headers = {"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}
         if self.token:
             headers["Authorization"] = f"Bearer {self.token}"
+        # #region agent log
+        tok = self.token or ""
+        dbg(
+            "A",
+            "github.py:GitHubClient.__init__",
+            "client_token_state",
+            {
+                "token_len": len(tok),
+                "token_prefix": tok[:4] if tok else "",
+                "has_whitespace": any(ch.isspace() for ch in tok),
+                "has_auth_header": "Authorization" in headers,
+            },
+        )
+        # #endregion
         self._client = httpx.AsyncClient(base_url="https://api.github.com", headers=headers, timeout=30.0)
 
     async def close(self) -> None:
@@ -66,13 +81,47 @@ class GitHubClient:
 
         timer = AuditTimer()
         try:
+            # #region agent log
+            dbg(
+                "D",
+                "github.py:inventory_repo",
+                "inventory_start",
+                {
+                    "repo": repo,
+                    "repo_repr": repr(repo),
+                    "branch": branch,
+                    "token_len": len(self.token or ""),
+                },
+            )
+            # #endregion
             repo_resp = await self._client.get(f"/repos/{repo}")
+            # #region agent log
+            dbg(
+                "C",
+                "github.py:inventory_repo",
+                "repos_get_result",
+                {
+                    "status": repo_resp.status_code,
+                    "url": str(repo_resp.request.url),
+                    "body_preview": repo_resp.text[:180],
+                },
+                run_id="post-fix",
+            )
+            # #endregion
             if repo_resp.is_error:
                 self._raise_github_api_error(repo_resp, repo)
 
             repo_data = repo_resp.json()
 
             languages_resp = await self._client.get(f"/repos/{repo}/languages")
+            # #region agent log
+            dbg(
+                "C",
+                "github.py:inventory_repo",
+                "languages_get_result",
+                {"status": languages_resp.status_code, "url": str(languages_resp.request.url)},
+            )
+            # #endregion
             if languages_resp.is_error:
                 self._raise_github_api_error(languages_resp, repo)
             languages = languages_resp.json()
@@ -98,6 +147,19 @@ class GitHubClient:
                 },
             )
         except Exception as exc:
+            # #region agent log
+            dbg(
+                "E",
+                "github.py:inventory_repo",
+                "inventory_exception",
+                {
+                    "exc_type": type(exc).__name__,
+                    "exc_str": str(exc)[:300],
+                    "is_httpx": isinstance(exc, httpx.HTTPStatusError),
+                    "status": getattr(getattr(exc, "response", None), "status_code", None),
+                },
+            )
+            # #endregion
             await audit_tool(
                 self.bus,
                 self.session_id,

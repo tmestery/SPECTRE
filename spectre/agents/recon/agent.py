@@ -101,26 +101,47 @@ class ReconAgent:
 
         try:
             if self._cognitive.llm.available:
-                tools = self._build_tools(ctx, bus, github, engagement, state)
-                reasoning = AgentReasoningLoop(self._cognitive.llm)
-                result = await reasoning.run(
-                    ctx,
-                    bus,
-                    system_prompt=RECON_REASONING,
-                    tools=tools,
-                    initial_context={"repo": ctx.repo, "branch": ctx.branch},
-                    response_schema=REASONING_RESPONSE_SCHEMA,
-                )
-                inventory = state.get("inventory")
-                if inventory and engagement is not None and inventory.clone_path:
-                    engagement.workspace_path = str(inventory.clone_path)
-                if inventory:
-                    await self._run_subagents(ctx, bus, inventory)
-                return AgentResult(
-                    status=AgentResultStatus.COMPLETE if result.completed else AgentResultStatus.EXHAUSTED,
-                    message=result.final_message or "recon complete",
-                    iterations_used=len(result.steps),
-                )
+                try:
+                    tools = self._build_tools(ctx, bus, github, engagement, state)
+                    reasoning = AgentReasoningLoop(self._cognitive.llm)
+                    result = await reasoning.run(
+                        ctx,
+                        bus,
+                        system_prompt=RECON_REASONING,
+                        tools=tools,
+                        initial_context={"repo": ctx.repo, "branch": ctx.branch},
+                        response_schema=REASONING_RESPONSE_SCHEMA,
+                    )
+                    inventory = state.get("inventory")
+                    if inventory and engagement is not None and inventory.clone_path:
+                        engagement.workspace_path = str(inventory.clone_path)
+                    if inventory:
+                        await self._run_subagents(ctx, bus, inventory)
+                        return AgentResult(
+                            status=(
+                                AgentResultStatus.COMPLETE
+                                if result.completed
+                                else AgentResultStatus.EXHAUSTED
+                            ),
+                            message=result.final_message or "recon complete",
+                            iterations_used=len(result.steps),
+                        )
+                    # LLM ran but never mapped the repo — fall through to deterministic.
+                    await bus.publish(
+                        BusEvent.agent_message(
+                            ctx.session_id,
+                            self.id,
+                            "LLM reasoning did not map the repository; falling back to deterministic recon.",
+                        )
+                    )
+                except Exception as exc:
+                    await bus.publish(
+                        BusEvent.agent_message(
+                            ctx.session_id,
+                            self.id,
+                            f"LLM unavailable ({exc}); falling back to deterministic recon.",
+                        )
+                    )
 
             return await self._run_deterministic(ctx, bus, github, engagement)
         finally:

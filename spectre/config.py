@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     scope_dir: Path = Path("scopes")
     log_level: str = "INFO"
     llm_provider: str = "groq"
-    llm_model: str = "llama-3.3-70b-versatile"
+    llm_model: str = "openai/gpt-oss-20b"
     llm_base_url: str = ""
     llm_timeout_seconds: float = 60.0
     llm_enabled: bool = True

@@ -31,3 +31,11 @@ def test_github_api_error_message_for_401(monkeypatch):
     message = github_api_error_message(exc, "tmestery/SPECTRE")
     assert message is not None
     assert "invalid or expired" in message
+
+
+def test_github_api_error_message_ignores_non_github_404():
+    """Groq/OpenAI model 404s must not be mislabeled as GitHub token failures."""
+    request = httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions")
+    response = httpx.Response(404, request=request)
+    exc = httpx.HTTPStatusError("not found", request=request, response=response)
+    assert github_api_error_message(exc, "tmestery/SPECTRE") is None

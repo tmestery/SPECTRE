@@ -14,8 +14,10 @@ services:
     volumes:
       - ./scopes:/app/scopes:ro
       - ./handoff_profiles:/app/handoff_profiles:ro
+      - ./spectre:/app/spectre:ro
       - ./data/sessions:/app/data/sessions
       - ./reports:/app/reports
+      - ./.cursor:/Users/tmestery/Desktop/SPECTRE/.cursor
     environment:
       WS_HOST: "0.0.0.0"
       WS_PORT: "8765"
@@ -25,7 +27,7 @@ services:
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       GROQ_API_KEY: ${GROQ_API_KEY:-}
       LLM_PROVIDER: ${LLM_PROVIDER:-groq}
-      LLM_MODEL: ${LLM_MODEL:-llama-3.3-70b-versatile}
+      LLM_MODEL: ${LLM_MODEL:-openai/gpt-oss-20b}
       SPECTRE_REPO: ${SPECTRE_REPO:-tmestery/SPECTRE}
       SPECTRE_SCOPE: ${SPECTRE_SCOPE:-scopes/spectre.yaml}
       SPECTRE_BRANCH: ${SPECTRE_BRANCH:-main}

@@ -21,21 +21,30 @@ class ReporterAgent:
         events = await bus.all_events()
 
         if self._cognitive.llm.available:
-            tools = self._build_tools(ctx, bus, findings, events)
-            reasoning = AgentReasoningLoop(self._cognitive.llm)
-            result = await reasoning.run(
-                ctx,
-                bus,
-                system_prompt=REPORTER_REASONING,
-                tools=tools,
-                initial_context={"finding_count": len(findings)},
-                response_schema=REASONING_RESPONSE_SCHEMA,
-            )
-            return AgentResult(
-                status=AgentResultStatus.COMPLETE if result.completed else AgentResultStatus.EXHAUSTED,
-                message=result.final_message or "reporter complete",
-                iterations_used=len(result.steps),
-            )
+            try:
+                tools = self._build_tools(ctx, bus, findings, events)
+                reasoning = AgentReasoningLoop(self._cognitive.llm)
+                result = await reasoning.run(
+                    ctx,
+                    bus,
+                    system_prompt=REPORTER_REASONING,
+                    tools=tools,
+                    initial_context={"finding_count": len(findings)},
+                    response_schema=REASONING_RESPONSE_SCHEMA,
+                )
+                return AgentResult(
+                    status=AgentResultStatus.COMPLETE if result.completed else AgentResultStatus.EXHAUSTED,
+                    message=result.final_message or "reporter complete",
+                    iterations_used=len(result.steps),
+                )
+            except Exception as exc:
+                await bus.publish(
+                    BusEvent.agent_message(
+                        ctx.session_id,
+                        self.id,
+                        f"LLM unavailable ({exc}); falling back to deterministic report.",
+                    )
+                )
 
         return await self._run_deterministic(ctx, bus, findings, events)
 
