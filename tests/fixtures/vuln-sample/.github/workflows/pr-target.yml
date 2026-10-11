@@ -1,0 +1,16 @@
+# DEMO ONLY — intentionally unsafe pull_request_target pattern for SPECTRE.
+name: Unsafe PR Target Demo
+on:
+  pull_request_target:
+    types: [opened, synchronize]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout untrusted PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Run untrusted script
+        run: npm install && node src/config.js
