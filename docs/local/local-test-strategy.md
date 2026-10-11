@@ -80,9 +80,12 @@ Runs on every pull request and push to `main`:
 | Job | Commands |
 |-----|----------|
 | Python | `pip install -e ".[dev]"` → `ruff check spectre/ tests/` → `pytest -q` |
+| Mypy | `mypy spectre` — **non-blocking** (`continue-on-error: true`) while typing is gradual |
 | UI | `npm ci` → `npm test` → `npm run build` (includes `tsc -b`) |
 
-CI disables live LLM calls (`LLM_ENABLED=false`). No GitHub or Groq secrets are required. Mypy is intentionally omitted until a typed config lands (tracked separately).
+CI disables live LLM calls (`LLM_ENABLED=false`). No GitHub or Groq secrets are required.
+
+Local mypy: `pip install -e ".[dev]"` then `mypy spectre`. Config lives in `pyproject.toml` under `[tool.mypy]`.
 
 ## Tests
 
@@ -90,5 +93,6 @@ N/A — meta doc.
 
 ## Changelog
 
+- 2026-06-25 — Added gradual mypy CI job (#36)
 - 2026-06-25 — Documented active GitHub Actions CI workflow (#16)
 - 2026-06-25 — Initial test strategy

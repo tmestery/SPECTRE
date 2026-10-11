@@ -26,6 +26,21 @@ jobs:
           LLM_ENABLED: "false"
           GROQ_API_KEY: ""
 
+  mypy:
+    name: Python typecheck (mypy)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install package
+        run: pip install -e ".[dev]"
+      - name: Mypy
+        run: mypy spectre
+
   ui:
     name: UI test and build
     runs-on: ubuntu-latest
