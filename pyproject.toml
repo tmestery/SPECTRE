@@ -22,6 +22,7 @@ dev = [
   "pytest>=8.2",
   "pytest-asyncio>=0.23",
   "ruff>=0.4",
+  "mypy>=1.10",
 ]
 
 [project.scripts]
@@ -41,3 +42,12 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.mypy]
+python_version = "3.12"
+packages = ["spectre"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+check_untyped_defs = true
+# Gradual typing — CI mypy job is non-blocking until the package is clean.
+pretty = true
