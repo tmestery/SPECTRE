@@ -1,0 +1,9 @@
+{
+  "name": "spectre-vuln-sample",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Intentionally vulnerable demo app for SPECTRE — fake secrets only",
+  "dependencies": {
+    "lodash": "4.17.20"
+  }
+}

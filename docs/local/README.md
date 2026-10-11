@@ -38,6 +38,7 @@ local-<area>-<topic>.md
 | [local-dev-repo-layout.md](local-dev-repo-layout.md) | Root hygiene, branding under `docs/assets/` |
 | [local-safety-lab-scope.md](local-safety-lab-scope.md) | Repo allowlists, audit, redaction |
 | [local-target-github-repo.md](local-target-github-repo.md) | **Primary v1 target** — GitHub repo audits |
+| [local-target-vuln-sample.md](local-target-vuln-sample.md) | Intentionally vulnerable demo sample repo |
 | [local-target-dvwa.md](local-target-dvwa.md) | ~~DVWA Docker lab~~ (deprecated) |
 | [local-agent-recon.md](local-agent-recon.md) | Recon — repo mapping |
 | [local-agent-vuln-hunter.md](local-agent-vuln-hunter.md) | VulnHunter — secrets, CVEs, workflows |
