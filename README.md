@@ -135,7 +135,6 @@ with `scopes/vuln-sample.yaml`.
 spectre/           Python orchestration (agents, bus, tools, safety)
 src/               React + TypeScript demo dashboard
 scopes/            Per-engagement repository allowlists
-handoff_profiles/  Handoff threshold configs (default, strict)
 tests/             Python tests (+ UI fixtures)
 docs/local/        Architecture and development documentation
 docs/assets/       Branding assets (logo)
@@ -161,7 +160,6 @@ CI runs on pull requests (pytest, Vitest, production build, gradual mypy).
 - [Judging agents](docs/local/local-arch-judging-agents.md)
 - [Demo UI](docs/local/local-ui-demo-dashboard.md)
 - [Safety and repository scope](docs/local/local-safety-lab-scope.md)
-- [Vulnerable sample target](docs/local/local-target-vuln-sample.md)
 - [Project roadmap](docs/local/local-plan-roadmap.md)
 
 ## Security and responsible use
