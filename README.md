@@ -16,7 +16,7 @@
   <img alt="Python 3.12+" src="https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white">
   <img alt="React 18" src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=111827">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white">
-  <img alt="Status" src="https://img.shields.io/badge/status-active_development-2563EB">
+  <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/tmestery/SPECTRE/ci.yml?branch=main&label=CI">
 </p>
 
 ---
@@ -33,17 +33,13 @@ crew's work observable in a real-time web dashboard.
 ## What SPECTRE provides
 
 - **Four-agent security crew** — Recon, VulnHunter, Exploiter, and Reporter
-  contribute distinct capabilities to one coordinated engagement.
-- **Visible coordination** — agent activity, findings, and handoff reasons stream
-  to the dashboard over WebSocket.
-- **Structured shared memory** — the Findings Bus provides an event-sourced
-  record of discoveries and validation attempts.
-- **Security tool integration** — sandboxed wrappers connect GitHub, gitleaks,
-  and osv-scanner to the audit workflow.
-- **Safety by default** — scope enforcement, secret redaction, API audit logs,
-  timeouts, and a human-operated kill switch constrain every run.
-- **Repeatable reporting** — confirmed evidence is synthesized into a clear,
-  actionable repository security report.
+- **Advisory judges** — Finding / Handoff / Report judges publish verdicts without changing deterministic handoffs
+- **Visible coordination** — agent chat, findings, handoffs, and report sections stream over WebSocket
+- **Findings Bus** — event-sourced shared memory for discoveries and validation attempts
+- **Tool wrappers** — sandboxed GitHub API, gitleaks (with fallback), osv-scanner, workflow analyzer
+- **Research exports** — `spectre metrics` (coordination JSON) and `spectre replay` (paced session playback)
+- **Handoff profiles** — swap threshold configs (`default` / `strict`) for A/B experiments
+- **Safety by default** — scope allowlists, secret redaction, audit logs, timeouts, kill switch
 
 ## How it works
 
@@ -55,6 +51,7 @@ flowchart LR
     Exploiter[Exploiter]
     Reporter[Reporter]
     Bus[(Findings Bus)]
+    Judges[Advisory judges]
     UI[Live dashboard]
 
     Target --> Recon
@@ -64,87 +61,84 @@ flowchart LR
     Bus --> Exploiter
     Exploiter -->|validated evidence| Bus
     Bus --> Reporter
+    Bus --> Judges
     Bus --> UI
     Reporter --> Report[Security report]
 ```
 
 Agents never call one another directly. They publish structured events to the
-Findings Bus, while the orchestrator evaluates those events and records each
-handoff with a human-readable reason.
+Findings Bus; the orchestrator records each handoff with a human-readable reason.
+Judges emit advisory verdicts only.
 
 ## Quick start
 
 ### Docker Compose (recommended)
 
-Requirements: Docker with Compose and credentials for GitHub and your selected
-LLM provider.
+Requirements: Docker with Compose, plus `GITHUB_TOKEN` and an LLM API key (Groq by default).
 
 ```bash
 cp .env.example .env
-```
-
-Add `GITHUB_TOKEN` and the API key for your configured provider to `.env`, then
-start the application:
-
-```bash
+# Edit .env — set GITHUB_TOKEN and GROQ_API_KEY (or another LLM provider)
 docker compose up --build
 ```
 
 Open [http://localhost:8080](http://localhost:8080) and select **Start audit**.
-The default engagement targets only the allowlisted repository in
-`scopes/spectre.yaml`.
+The compose stack runs nginx (UI) plus `spectre serve` (WebSocket control server).
+Default scope: `scopes/spectre.yaml` (`tmestery/SPECTRE`).
 
-For configuration details, see the
-[Docker guide](docs/local/local-dev-docker.md).
+See the [Docker guide](docs/local/local-dev-docker.md).
 
 ### Local development
 
-Requirements: Python 3.12+, Node.js, npm, and any external scanners used by the
-engagement.
+Requirements: Python 3.12+, Node.js, npm. Optional: `gitleaks`, `osv-scanner`.
 
 ```bash
-# Install the Python application and development tools
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -e ".[dev]"
-
-# Install the dashboard
 npm install
-
-# Configure credentials and runtime settings
 cp .env.example .env
 ```
 
-After adding your credentials to `.env`, start the backend and dashboard in
-separate terminals:
-
 ```bash
-# Terminal 1 — control server and WebSocket stream
+# Terminal 1 — control server + WebSocket
 source .venv/bin/activate
 python -m spectre.cli serve
-```
 
-```bash
 # Terminal 2 — Vite dashboard
 npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173).
 
+### CLI engagements
+
+```bash
+# One-shot audit (optional --ws, --handoff-profile strict)
+python -m spectre.cli run \
+  --repo tmestery/spectre-vuln-sample \
+  --scope scopes/vuln-sample.yaml \
+  --branch main
+
+python -m spectre.cli report --session eng_<id>
+python -m spectre.cli metrics --session eng_<id>
+python -m spectre.cli replay --session eng_<id> --speed 2 --ws
+python -m spectre.cli halt --session eng_<id>
+```
+
+Demo sample (fake secrets only): [`tmestery/spectre-vuln-sample`](https://github.com/tmestery/spectre-vuln-sample)
+with `scopes/vuln-sample.yaml`.
+
 ## Repository structure
 
 ```text
-spectre/
-  agents/          Specialized audit agents and reasoning
-  bus/             Findings store and event publication
-  orchestrator/    Engagement lifecycle and handoffs
-  safety/          Scope enforcement, audit logs, and halt controls
-  schemas/         Shared Pydantic models
-  tools/           Sandboxed GitHub and scanner integrations
-src/               React + TypeScript dashboard
+spectre/           Python orchestration (agents, bus, tools, safety)
+src/               React + TypeScript demo dashboard
 scopes/            Per-engagement repository allowlists
-tests/             Python test suite
+handoff_profiles/  Handoff threshold configs (default, strict)
+tests/             Python tests (+ UI fixtures)
 docs/local/        Architecture and development documentation
+docs/assets/       Branding assets (logo)
 ```
 
 ## Quality checks
@@ -155,6 +149,8 @@ npm test
 npm run build
 ```
 
+CI runs on pull requests (pytest, Vitest, production build, gradual mypy).
+
 ## Documentation
 
 - [Agent and contributor guide](AGENTS.md)
@@ -162,7 +158,10 @@ npm run build
 - [Architecture overview](docs/local/local-arch-overview.md)
 - [Findings Bus](docs/local/local-arch-findings-bus.md)
 - [Handoff protocol](docs/local/local-arch-handoff-protocol.md)
+- [Judging agents](docs/local/local-arch-judging-agents.md)
+- [Demo UI](docs/local/local-ui-demo-dashboard.md)
 - [Safety and repository scope](docs/local/local-safety-lab-scope.md)
+- [Vulnerable sample target](docs/local/local-target-vuln-sample.md)
 - [Project roadmap](docs/local/local-plan-roadmap.md)
 
 ## Security and responsible use
