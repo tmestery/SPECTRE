@@ -1,0 +1,15 @@
+name: vuln-sample-audit
+description: Authorized audit of the intentionally vulnerable SPECTRE demo sample
+allowed_repos:
+  - tmestery/spectre-vuln-sample
+allowed_branches:
+  - main
+include_paths:
+  - "**"
+exclude_paths:
+  - "node_modules/**"
+  - "dist/**"
+  - ".git/**"
+max_commits_depth: 50
+max_duration_minutes: 30
+authorization: owner-confirmed

@@ -1,8 +1,8 @@
 # local-target-github-repo
 
 **Status:** active  
-**Updated:** 2026-06-25  
-**Related:** [local-safety-lab-scope.md](local-safety-lab-scope.md), [local-agent-recon.md](local-agent-recon.md)
+**Updated:** 2026-10-10  
+**Related:** [local-safety-lab-scope.md](local-safety-lab-scope.md), [local-agent-recon.md](local-agent-recon.md), [local-target-vuln-sample.md](local-target-vuln-sample.md)
 
 ## Summary
 
@@ -51,7 +51,7 @@ Store in `.env` as `GITHUB_TOKEN`. Never commit tokens.
 |------|---------|
 | **Your own repo** | Primary demo — real, authorized |
 | **`tmestery/SPECTRE`** | Dogfood — audit the project itself |
-| **Intentionally vulnerable sample** | Phase 2 — curated test repo with planted secrets (not random public repos) |
+| **[`tmestery/spectre-vuln-sample`](https://github.com/tmestery/spectre-vuln-sample)** | Curated planted secrets / CVEs / unsafe workflow — see [local-target-vuln-sample.md](local-target-vuln-sample.md) |
 
 ### Demo audit path
 
@@ -62,12 +62,12 @@ Store in `.env` as `GITHUB_TOKEN`. Never commit tokens.
 | 3 | Exploiter | Validate secret / confirm CVE reachability | `validation_attempt` confirmed |
 | 4 | Reporter | Synthesize | Markdown report with file links and remediation |
 
-### CLI (planned)
+### CLI
 
 ```bash
 python -m spectre.cli run \
-  --repo tmestery/my-app \
-  --scope scopes/my-app.yaml \
+  --repo tmestery/spectre-vuln-sample \
+  --scope scopes/vuln-sample.yaml \
   --branch main
 ```
 
@@ -92,4 +92,5 @@ python -m spectre.cli run \
 
 ## Changelog
 
+- 2026-10-10 — Linked vuln sample repo + `scopes/vuln-sample.yaml` (#13)
 - 2026-06-25 — Initial GitHub repo target doc (primary v1 target)
