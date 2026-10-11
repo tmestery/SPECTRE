@@ -1,14 +1,16 @@
 import type { Finding } from "../types/events";
 import { SeverityBadge } from "./SeverityBadge";
+import { VerdictBadge } from "./VerdictBadge";
 import { fileFromTarget, githubPermalink } from "../lib/github";
 
 interface Props {
   finding: Finding;
   repo: string;
   branch: string;
+  judgment?: Finding | null;
 }
 
-export function FindingCard({ finding, repo, branch }: Props) {
+export function FindingCard({ finding, repo, branch, judgment }: Props) {
   const evidencePath =
     (finding.evidence.file as string | undefined) ??
     (finding.evidence.path as string | undefined);
@@ -16,6 +18,9 @@ export function FindingCard({ finding, repo, branch }: Props) {
   const fromTarget = fileFromTarget(finding.target);
   const path = evidencePath ?? fromTarget.path;
   const permalink = path ? githubPermalink(repo, branch, path, line ?? fromTarget.line) : null;
+  const judgmentVerdict = judgment?.evidence?.verdict
+    ? String(judgment.evidence.verdict)
+    : null;
 
   return (
     <article className="finding-card">
@@ -23,6 +28,7 @@ export function FindingCard({ finding, repo, branch }: Props) {
         <SeverityBadge severity={finding.severity} />
         <span className="finding-type">{finding.type}</span>
         <span className="finding-agent">{finding.agent}</span>
+        {judgmentVerdict ? <VerdictBadge verdict={judgmentVerdict} kind="judgment" /> : null}
       </div>
       <h3>{finding.title}</h3>
       {permalink ? (

@@ -36,17 +36,39 @@ export interface Finding {
   created_at: string;
 }
 
+export type JudgmentVerdict = "uphold" | "downgrade" | "dismiss";
+export type HandoffVerdictValue = "approve" | "defer" | "reject";
+export type ReportVerdictValue = "accept" | "revise";
+
+export interface HandoffVerdict {
+  decision_id: string;
+  verdict: HandoffVerdictValue | string;
+  rationale: string;
+  advisory?: boolean;
+}
+
+export interface ReportVerdict {
+  report_section_ids: string[];
+  verdict: ReportVerdictValue | string;
+  issues: string[];
+  rationale: string;
+  advisory?: boolean;
+}
+
 export interface HandoffDecision {
+  id: string;
   rule: string;
   from_agent: string;
   to_agent: string | null;
   rationale: string;
+  verdict?: HandoffVerdict | null;
 }
 
 export interface ReportSection {
   section_id: string;
   title: string;
   markdown: string;
+  verdict?: ReportVerdict | null;
 }
 
 export interface AgentMessage {
