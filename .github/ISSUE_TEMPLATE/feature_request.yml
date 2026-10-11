@@ -1,0 +1,64 @@
+name: Feature request
+description: Propose a new feature or enhancement for SPECTRE
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Prefer small, demo-aligned changes. v1 scope is authorized GitHub repo audit
+        (no org-wide sweeps unless explicitly requested).
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What and why (one short paragraph)
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: Motivation
+      description: Research angle, demo impact, or user need
+    validations:
+      required: true
+
+  - type: textarea
+    id: approach
+    attributes:
+      label: Proposed approach
+      description: High-level design if known
+    validations:
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: dropdown
+    id: safety
+    attributes:
+      label: Safety / scope impact
+      description: Does this touch offensive tooling, scope enforcement, or targets?
+      options:
+        - None — docs, UI, or non-scanning change
+        - Touches tools/agents — must keep authorized-repo scope checks
+        - Changes scope / safety policy — needs explicit review
+    validations:
+      required: true
+
+  - type: input
+    id: docs
+    attributes:
+      label: Related docs
+      description: Link docs/local/ files if applicable
+      placeholder: docs/local/local-arch-handoff-protocol.md
+    validations:
+      required: false

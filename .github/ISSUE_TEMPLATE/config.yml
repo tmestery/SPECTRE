@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Agent guide
+    url: https://github.com/tmestery/SPECTRE/blob/main/AGENTS.md
+    about: Project summary, crew architecture, and contributor workflows
+  - name: Local docs index
+    url: https://github.com/tmestery/SPECTRE/blob/main/docs/local/README.md
+    about: Architecture, safety, and development documentation

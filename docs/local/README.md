@@ -37,6 +37,7 @@ local-<area>-<topic>.md
 | [local-dev-standards.md](local-dev-standards.md) | Async I/O, tests, documentation rules |
 | [local-dev-readme.md](local-dev-readme.md) | Root README maintenance notes |
 | [local-dev-git-workflow.md](local-dev-git-workflow.md) | Issues, branches, PRs |
+| [local-dev-github-templates.md](local-dev-github-templates.md) | `.github/` PR/issue templates and CI layout |
 | [local-dev-repo-layout.md](local-dev-repo-layout.md) | Root hygiene, branding under `docs/assets/` |
 | [local-safety-lab-scope.md](local-safety-lab-scope.md) | Repo allowlists, audit, redaction |
 | [local-target-github-repo.md](local-target-github-repo.md) | **Primary v1 target** — GitHub repo audits |

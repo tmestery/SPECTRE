@@ -1,0 +1,93 @@
+name: Bug report
+description: Report a bug in SPECTRE
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. Redact tokens and secrets before pasting logs.
+        Confirm any scans were limited to authorized repos in `scopes/*.yaml`.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What went wrong?
+      placeholder: Brief description of the failure
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps someone else can follow
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: OS
+      placeholder: macOS 15 / Ubuntu 24.04
+    validations:
+      required: false
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: 3.12.x
+    validations:
+      required: false
+
+  - type: input
+    id: node
+    attributes:
+      label: Node version (if UI)
+      placeholder: 20.x
+    validations:
+      required: false
+
+  - type: input
+    id: target
+    attributes:
+      label: Authorized target (if applicable)
+      description: owner/repo from your scope file — never paste tokens
+      placeholder: owner/authorized-repo
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / screenshots
+      description: Paste relevant output; redact API keys and secrets
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety note
+      options:
+        - label: Any engagement or scan was limited to repos I own or am authorized to test
+          required: true
