@@ -1,8 +1,8 @@
 # local-dev-docker
 
-**Status:** active
-**Updated:** 2026-06-25
-**Related:** `Dockerfile`, `docker-compose.yml`, `spectre/server/control.py`, `spectre/cli.py serve`
+**Status:** active  
+**Updated:** 2026-10-11  
+**Related:** `Dockerfile`, `docker-compose.yml`, `spectre/server/control.py`, `spectre/cli.py serve`, [local-arch-handoff-profiles.md](local-arch-handoff-profiles.md)
 
 ## Summary
 
@@ -16,8 +16,8 @@ Docker Compose bundles nginx (static UI), a long-running WebSocket control serve
 
 | Path | Role |
 |------|------|
-| `Dockerfile` | Multi-stage build: UI + `runtime` demo image + slim `cli` image |
-| `docker-compose.yml` | `spectre` demo service; optional `cli` profile for report/halt/sessions |
+| `Dockerfile` | Multi-stage build: UI + `runtime` demo image + slim `cli` image (includes `handoff_profiles/`) |
+| `docker-compose.yml` | `spectre` demo service; optional `cli` profile for report/halt/sessions; mounts `scopes/` + `handoff_profiles/` |
 | `docker/entrypoint.sh` | nginx on 8080 + `spectre serve` |
 | `spectre/server/control.py` | WebSocket control plane: start, subscribe, halt, list sessions |
 | `spectre/cli.py serve` | Long-running control server for UI and Docker |
@@ -81,5 +81,6 @@ Open http://localhost:5173 and click **Start audit**.
 
 ## Changelog
 
+- **2026-10-11** — Ship and mount `handoff_profiles/` so Docker engagements can load `default` / `strict`
 - **2026-06-25** — UI-driven starts via `spectre serve`; Docker no longer auto-runs engagements.
 - **2026-06-25** — Initial Docker Compose stack.

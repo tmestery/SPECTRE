@@ -39,12 +39,14 @@ WORKDIR /app
 
 COPY pyproject.toml README.md ./
 COPY spectre ./spectre
+COPY handoff_profiles ./handoff_profiles
 RUN pip install --no-cache-dir .
 
 ENV PYTHONUNBUFFERED=1 \
     WS_HOST=0.0.0.0 \
     SPECTRE_DATA_DIR=/app/data/sessions \
-    SCOPE_DIR=/app/scopes
+    SCOPE_DIR=/app/scopes \
+    HANDOFF_PROFILES_DIR=/app/handoff_profiles
 
 FROM python-base AS cli
 
