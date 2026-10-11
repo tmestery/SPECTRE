@@ -5,8 +5,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from websockets.asyncio.server import Server, ServerConnection
 from websockets.exceptions import ConnectionClosed
-from websockets.server import ServerConnection
 
 from spectre.bus.store import FindingsBus
 from spectre.config import settings
@@ -44,11 +44,11 @@ class ActiveEngagement:
 class SpectreControlServer:
     def __init__(self, scope_dir: Path | None = None) -> None:
         self.scope_dir = scope_dir or settings.scope_dir
-        self._clients: set = set()
+        self._clients: set[ServerConnection] = set()
         self._active: ActiveEngagement | None = None
-        self._server: asyncio.Server | None = None
+        self._server: Server | None = None
 
-    async def start(self) -> asyncio.Server:
+    async def start(self) -> Server:
         self._server = await serve_spectre_ws(self._handler, settings.ws_host, settings.ws_port)
         return self._server
 

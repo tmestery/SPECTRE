@@ -2,8 +2,8 @@ import asyncio
 import json
 from typing import Any
 
+from websockets.asyncio.server import Server, ServerConnection
 from websockets.exceptions import ConnectionClosed
-from websockets.server import ServerConnection
 
 from spectre.bus.store import FindingsBus
 from spectre.config import settings
@@ -36,11 +36,11 @@ class EngagementWebSocketServer:
         self._relay_task: asyncio.Task | None = None
         self._halt_requested = False
 
-    async def start(self) -> asyncio.Server:
+    async def start(self) -> Server:
         self._relay_task = asyncio.create_task(self._relay_events())
         return await serve_spectre_ws(self._handler, settings.ws_host, settings.ws_port)
 
-    async def stop(self, server: asyncio.Server) -> None:
+    async def stop(self, server: Server) -> None:
         server.close()
         await server.wait_closed()
         if self._relay_task:
