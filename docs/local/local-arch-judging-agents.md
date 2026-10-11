@@ -120,6 +120,16 @@ Module: `spectre/schemas/judging.py`
 - Judges must not invent file paths, CVEs, or out-of-scope repos
 - Audit every judge LLM call as `llm_invocation` with `metadata.phase=judge`
 
+## Orchestrator wiring (implemented)
+
+When `JUDGES_ENABLED=true` (default):
+
+1. After `vuln_hunter` or `exploiter` completes → run `finding_judge`
+2. After each published `handoff_decision` → run `handoff_judge`
+3. After `reporter` completes (terminal handoff) → run `report_judge`
+
+Judge failures are logged and **never** change `to_agent`. Metrics include `judgment_count`, `handoff_verdict_count`, and `report_verdict_count`.
+
 ## Implementation children
 
 | # | Issue |
@@ -152,5 +162,6 @@ Related follow-ons: [#28](https://github.com/tmestery/SPECTRE/issues/28) demo UI
 
 ## Changelog
 
+- 2026-06-25 — Orchestrator schedules advisory judges (`JUDGES_ENABLED`) (#33)
 - 2026-06-25 — Schemas implemented in `spectre/schemas/judging.py` (#29)
 - 2026-06-25 — ADR for judging agent layer; open questions resolved (#22)

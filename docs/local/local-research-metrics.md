@@ -32,6 +32,8 @@ Phase 4 studies how agents coordinate. The Findings Bus remains the source of tr
 | `handoff_counts_by_rule` | Count of handoff decisions by rule name |
 | `validation_confirmed` / `validation_false_positive` | Raw validation counts |
 | `total_findings` / `total_handoffs` | Totals |
+| `judgment_count` | Count of `judgment` findings |
+| `handoff_verdict_count` / `report_verdict_count` | Advisory judge verdict events |
 
 ### CLI
 
