@@ -5,7 +5,9 @@ import type {
   EngagementMeta,
   Finding,
   HandoffDecision,
+  HandoffVerdict,
   ReportSection,
+  ReportVerdict,
 } from "../types/events";
 
 const WS_URL = import.meta.env.VITE_WS_URL ?? "ws://localhost:8765";
@@ -39,8 +41,10 @@ export interface EngagementState {
   meta: EngagementMeta | null;
   messages: AgentMessage[];
   findings: Finding[];
+  judgments: Finding[];
   handoffs: HandoffDecision[];
   reportSections: ReportSection[];
+  reportVerdict: ReportVerdict | null;
   status: "idle" | "running" | "complete" | "halted";
   error: string | null;
   defaults: EngagementDefaults | null;
@@ -60,8 +64,10 @@ const INITIAL: EngagementState = {
   meta: null,
   messages: [],
   findings: [],
+  judgments: [],
   handoffs: [],
   reportSections: [],
+  reportVerdict: null,
   status: "idle",
   error: null,
   defaults: null,
@@ -74,7 +80,8 @@ const INITIAL: EngagementState = {
   llmModel: null,
 };
 
-function applyEvent(state: EngagementState, event: BusEvent): EngagementState {
+/** Apply a bus event to engagement UI state (exported for tests). */
+export function applyEvent(state: EngagementState, event: BusEvent): EngagementState {
   const next = { ...state };
 
   switch (event.type) {
@@ -100,20 +107,40 @@ function applyEvent(state: EngagementState, event: BusEvent): EngagementState {
       break;
     case "finding": {
       const finding = event.payload.finding as Finding;
-      if (finding) next.findings = [...next.findings, finding];
+      if (finding) {
+        if (finding.type === "judgment") {
+          next.judgments = [...next.judgments, finding];
+        } else {
+          next.findings = [...next.findings, finding];
+        }
+      }
       break;
     }
     case "handoff_decision":
       next.handoffs = [
         ...next.handoffs,
         {
+          id: event.id,
           rule: String(event.payload.rule ?? ""),
           from_agent: String(event.payload.from_agent ?? ""),
           to_agent: (event.payload.to_agent as string | null) ?? null,
           rationale: String(event.payload.rationale ?? ""),
+          verdict: null,
         },
       ];
       break;
+    case "handoff_verdict": {
+      const verdict: HandoffVerdict = {
+        decision_id: String(event.payload.decision_id ?? ""),
+        verdict: String(event.payload.verdict ?? ""),
+        rationale: String(event.payload.rationale ?? ""),
+        advisory: event.payload.advisory !== false,
+      };
+      next.handoffs = next.handoffs.map((handoff) =>
+        handoff.id === verdict.decision_id ? { ...handoff, verdict } : handoff,
+      );
+      break;
+    }
     case "report_section":
       next.reportSections = [
         ...next.reportSections,
@@ -121,9 +148,27 @@ function applyEvent(state: EngagementState, event: BusEvent): EngagementState {
           section_id: String(event.payload.section_id ?? ""),
           title: String(event.payload.title ?? ""),
           markdown: String(event.payload.markdown ?? ""),
+          verdict: null,
         },
       ];
       break;
+    case "report_verdict": {
+      const verdict: ReportVerdict = {
+        report_section_ids: Array.isArray(event.payload.report_section_ids)
+          ? (event.payload.report_section_ids as string[])
+          : [],
+        verdict: String(event.payload.verdict ?? ""),
+        issues: Array.isArray(event.payload.issues) ? (event.payload.issues as string[]) : [],
+        rationale: String(event.payload.rationale ?? ""),
+        advisory: event.payload.advisory !== false,
+      };
+      next.reportVerdict = verdict;
+      const ids = new Set(verdict.report_section_ids);
+      next.reportSections = next.reportSections.map((section) =>
+        ids.size === 0 || ids.has(section.section_id) ? { ...section, verdict } : section,
+      );
+      break;
+    }
     case "engagement_complete":
       next.status = "complete";
       next.activeSession = null;

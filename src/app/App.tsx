@@ -51,6 +51,7 @@ export function App() {
 
   return (
     <div className="shell">
+      <div className="shell-atmosphere" aria-hidden="true" />
       <ScopeBanner meta={state.meta} status={state.status} />
 
       {!state.llmConfigured ? (
@@ -62,102 +63,104 @@ export function App() {
 
       {!state.githubTokenConfigured ? (
         <p className="token-warning">
-          GITHUB_TOKEN is not set. Add it to <code>.env</code> and restart Docker
-          (e.g. <code>GITHUB_TOKEN=$(gh auth token)</code>).
+          GITHUB_TOKEN is not set. Add it to <code>.env</code> and restart Docker (e.g.{" "}
+          <code>GITHUB_TOKEN=$(gh auth token)</code>).
         </p>
       ) : null}
 
-      <div className="toolbar start-panel">
-        <label className="field">
-          Repository
-          <input
-            value={repo}
-            onChange={(e) => setRepo(e.target.value)}
-            placeholder="owner/repo"
-            list="allowed-repos"
-            disabled={running}
-          />
-        </label>
-        <datalist id="allowed-repos">
-          {(selectedScope?.allowed_repos ?? []).map((slug) => (
-            <option key={slug} value={slug} />
-          ))}
-        </datalist>
-
-        <label className="field">
-          Branch
-          <input
-            value={branch}
-            onChange={(e) => setBranch(e.target.value)}
-            placeholder="main"
-            list="allowed-branches"
-            disabled={running}
-          />
-        </label>
-        <datalist id="allowed-branches">
-          {(selectedScope?.allowed_branches ?? []).map((name) => (
-            <option key={name} value={name} />
-          ))}
-        </datalist>
-
-        <label className="field">
-          Scope
-          <select
-            value={scopePath}
-            onChange={(e) => setScopePath(e.target.value)}
-            disabled={running || state.scopes.length === 0}
-          >
-            {state.scopes.map((scope) => (
-              <option key={scope.path} value={scope.path}>
-                {scope.name}
-              </option>
+      <section className="control-deck">
+        <div className="toolbar start-panel">
+          <label className="field">
+            Repository
+            <input
+              value={repo}
+              onChange={(e) => setRepo(e.target.value)}
+              placeholder="owner/repo"
+              list="allowed-repos"
+              disabled={running}
+            />
+          </label>
+          <datalist id="allowed-repos">
+            {(selectedScope?.allowed_repos ?? []).map((slug) => (
+              <option key={slug} value={slug} />
             ))}
-          </select>
-        </label>
+          </datalist>
 
-        <button
-          type="button"
-          className="primary-btn"
-          disabled={!canStart}
-          onClick={() => startEngagement(repo.trim(), branch.trim(), scopePath)}
-        >
-          Start audit
-        </button>
-
-        <HaltButton disabled={!canHalt} onHalt={requestHalt} />
-
-        {state.sessionId ? <span className="session-chip">{state.sessionId}</span> : null}
-        {state.error ? <span className="error">{state.error}</span> : null}
-        {!state.connected ? <span className="muted">Connecting to orchestrator…</span> : null}
-      </div>
-
-      <div className="toolbar history-panel">
-        <label className="field">
-          Past session
-          <select
-            value={historySession}
-            onChange={(e) => setHistorySession(e.target.value)}
-            disabled={!state.ready || running}
-          >
-            <option value="">Select a saved session…</option>
-            {state.sessions.map((session) => (
-              <option key={session.session_id} value={session.session_id}>
-                {session.session_id} · {session.repo} · {session.status}
-              </option>
+          <label className="field">
+            Branch
+            <input
+              value={branch}
+              onChange={(e) => setBranch(e.target.value)}
+              placeholder="main"
+              list="allowed-branches"
+              disabled={running}
+            />
+          </label>
+          <datalist id="allowed-branches">
+            {(selectedScope?.allowed_branches ?? []).map((name) => (
+              <option key={name} value={name} />
             ))}
-          </select>
-        </label>
-        <button
-          type="button"
-          disabled={!historySession || running}
-          onClick={() => loadSession(historySession)}
-        >
-          Load session
-        </button>
-        <button type="button" disabled={!state.ready} onClick={refreshSessions}>
-          Refresh
-        </button>
-      </div>
+          </datalist>
+
+          <label className="field">
+            Scope
+            <select
+              value={scopePath}
+              onChange={(e) => setScopePath(e.target.value)}
+              disabled={running || state.scopes.length === 0}
+            >
+              {state.scopes.map((scope) => (
+                <option key={scope.path} value={scope.path}>
+                  {scope.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <button
+            type="button"
+            className="primary-btn"
+            disabled={!canStart}
+            onClick={() => startEngagement(repo.trim(), branch.trim(), scopePath)}
+          >
+            Start audit
+          </button>
+
+          <HaltButton disabled={!canHalt} onHalt={requestHalt} />
+
+          {state.sessionId ? <span className="session-chip">{state.sessionId}</span> : null}
+          {state.error ? <span className="error">{state.error}</span> : null}
+          {!state.connected ? <span className="muted">Connecting to orchestrator…</span> : null}
+        </div>
+
+        <div className="toolbar history-panel">
+          <label className="field grow">
+            Past session
+            <select
+              value={historySession}
+              onChange={(e) => setHistorySession(e.target.value)}
+              disabled={!state.ready || running}
+            >
+              <option value="">Select a saved session…</option>
+              {state.sessions.map((session) => (
+                <option key={session.session_id} value={session.session_id}>
+                  {session.session_id} · {session.repo} · {session.status}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            disabled={!historySession || running}
+            onClick={() => loadSession(historySession)}
+          >
+            Load session
+          </button>
+          <button type="button" disabled={!state.ready} onClick={refreshSessions}>
+            Refresh
+          </button>
+        </div>
+      </section>
 
       <main className="dashboard">
         <div className="column">
@@ -165,8 +168,13 @@ export function App() {
           <HandoffGraph handoffs={state.handoffs} />
         </div>
         <div className="column">
-          <FindingsTimeline findings={state.findings} repo={displayRepo} branch={displayBranch} />
-          <LiveReportPanel sections={state.reportSections} />
+          <FindingsTimeline
+            findings={state.findings}
+            judgments={state.judgments}
+            repo={displayRepo}
+            branch={displayBranch}
+          />
+          <LiveReportPanel sections={state.reportSections} reportVerdict={state.reportVerdict} />
         </div>
       </main>
     </div>

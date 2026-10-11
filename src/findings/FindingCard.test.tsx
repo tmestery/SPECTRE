@@ -42,6 +42,29 @@ describe("HandoffGraph", () => {
     const html = renderToStaticMarkup(<HandoffGraph handoffs={[]} />);
     expect(html).toContain("No handoffs yet");
   });
+
+  it("renders handoff verdict badge when present", () => {
+    const html = renderToStaticMarkup(
+      <HandoffGraph
+        handoffs={[
+          {
+            id: "evt_1",
+            rule: "repo_mapped",
+            from_agent: "recon",
+            to_agent: "vuln_hunter",
+            rationale: "mapped",
+            verdict: {
+              decision_id: "evt_1",
+              verdict: "approve",
+              rationale: "looks good",
+            },
+          },
+        ]}
+      />,
+    );
+    expect(html).toContain("Approve");
+    expect(html).toContain("verdict-approve");
+  });
 });
 
 describe("sortEventsByTimestamp", () => {

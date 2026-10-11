@@ -6,25 +6,14 @@ interface Props {
 }
 
 export function ScopeBanner({ meta, status }: Props) {
-  if (!meta) {
-    return (
-      <header className="banner">
-        <div>
-          <h1>SPECTRE</h1>
-          <p>GitHub repo audit crew — Phase 3</p>
-        </div>
-        <span className="status-pill idle">idle</span>
-      </header>
-    );
-  }
-
   return (
     <header className="banner">
-      <div>
-        <h1>SPECTRE</h1>
-        <p>
-          {meta.repo} @ {meta.branch}
-          {meta.scopeName ? ` · scope: ${meta.scopeName}` : ""}
+      <div className="brand-block">
+        <p className="brand-mark">SPECTRE</p>
+        <p className="brand-tag">
+          {meta
+            ? `${meta.repo} @ ${meta.branch}${meta.scopeName ? ` · ${meta.scopeName}` : ""}`
+            : "Self-coordinating repo audit crew"}
         </p>
       </div>
       <span className={`status-pill ${status}`}>{status}</span>

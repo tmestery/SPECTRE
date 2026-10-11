@@ -3,11 +3,11 @@ interface Props {
 }
 
 const COLORS: Record<string, string> = {
-  critical: "#ef4444",
-  high: "#f97316",
-  medium: "#eab308",
-  low: "#22c55e",
-  info: "#64748b",
+  critical: "#c45c4a",
+  high: "#d4844a",
+  medium: "#d4a574",
+  low: "#7aa889",
+  info: "#6f6a61",
 };
 
 export function SeverityBadge({ severity }: Props) {
