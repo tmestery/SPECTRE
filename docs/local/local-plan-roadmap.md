@@ -1,12 +1,12 @@
 # local-plan-roadmap
 
 **Status:** active  
-**Updated:** 2026-06-25  
-**Related:** [AGENTS.md](../../AGENTS.md), [local-arch-overview.md](local-arch-overview.md)
+**Updated:** 2026-10-11  
+**Related:** [AGENTS.md](../../AGENTS.md), [local-arch-overview.md](local-arch-overview.md), [local-dev-release.md](local-dev-release.md)
 
 ## Summary
 
-Master build plan for SPECTRE — a multi-agent **GitHub repository security auditing** system with a visual demo. Phases 0–3 are complete; Phase 4 research instrumentation and judging work continues.
+Master build plan for SPECTRE — a multi-agent **GitHub repository security auditing** system with a visual demo. Phases 0–3 are complete; Phase 4 research instrumentation and judging work continues. **Product release: 1.0.0.**
 
 ## Context
 
@@ -135,6 +135,7 @@ N/A — planning doc. Each phase deliverable follows [local-dev-standards.md](lo
 
 ## Changelog
 
+- 2026-10-11 — Noted product release 1.0.0
 - 2026-06-25 — Synced Phase 0–4 status and issue numbers (#35)
 - 2026-06-26 — Phase 3 complete (Reporter + Demo UI + WebSocket)
 - 2026-06-25 — Pivot primary target from DVWA to GitHub repos

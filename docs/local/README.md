@@ -54,6 +54,7 @@ local-<area>-<topic>.md
 | [local-tool-websocket-stream.md](local-tool-websocket-stream.md) | WebSocket event stream + halt |
 | [local-test-strategy.md](local-test-strategy.md) | pytest, vitest, fixtures |
 | [local-dev-docker.md](local-dev-docker.md) | Docker Compose one-command demo |
+| [local-dev-release.md](local-dev-release.md) | Version bump checklist and GitHub Releases |
 
 ## Adding docs
 
