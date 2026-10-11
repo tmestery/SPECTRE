@@ -51,26 +51,20 @@ Example: `feature/4-recon-agent`
 - Must meet **development-standards** (tests, docs, scope rules)
 - Security-sensitive changes: note scope/safety impact in PR body
 
-### Issue tracker (#1–#16)
+### Issue tracker (selected)
 
-| Issue | Title | Phase |
+Closed foundation (#1–#12, #14–#16, #22, #40) is summarized in [local-plan-roadmap.md](local-plan-roadmap.md). Active Phase 4+ work:
+
+| Issue | Title | Notes |
 |-------|-------|-------|
-| [#1](https://github.com/tmestery/SPECTRE/issues/1) | Phase 0: documentation and agent scaffold | 0 |
-| [#2](https://github.com/tmestery/SPECTRE/issues/2) | Scaffold Python + UI monorepo | 1 |
-| [#3](https://github.com/tmestery/SPECTRE/issues/3) | Findings Bus and repo finding schemas | 1 |
-| [#4](https://github.com/tmestery/SPECTRE/issues/4) | Repo scope enforcement and audit log | 1 |
-| [#5](https://github.com/tmestery/SPECTRE/issues/5) | Orchestrator skeleton and engagement lifecycle | 1 |
-| [#6](https://github.com/tmestery/SPECTRE/issues/6) | Recon agent and GitHub API client | 1 |
-| [#7](https://github.com/tmestery/SPECTRE/issues/7) | Handoff protocol v1 (repo rules) | 1–2 |
-| [#8](https://github.com/tmestery/SPECTRE/issues/8) | VulnHunter agent with gitleaks and osv-scanner | 2 |
-| [#9](https://github.com/tmestery/SPECTRE/issues/9) | Exploiter agent and validation layer | 2 |
-| [#10](https://github.com/tmestery/SPECTRE/issues/10) | Reporter agent and GitHub permalink reports | 3 |
-| [#11](https://github.com/tmestery/SPECTRE/issues/11) | Demo UI shell | 3 |
-| [#12](https://github.com/tmestery/SPECTRE/issues/12) | WebSocket event stream and kill switch | 3 |
-| [#13](https://github.com/tmestery/SPECTRE/issues/13) | Intentionally vulnerable sample repo for demos | 4 |
-| [#14](https://github.com/tmestery/SPECTRE/issues/14) | Handoff decision logging and coordination metrics | 4 |
-| [#15](https://github.com/tmestery/SPECTRE/issues/15) | Engagement replay mode | 4 |
-| [#16](https://github.com/tmestery/SPECTRE/issues/16) | CI pipeline for tests and lint | dev |
+| [#13](https://github.com/tmestery/SPECTRE/issues/13) | Intentionally vulnerable sample repo | Open |
+| [#28](https://github.com/tmestery/SPECTRE/issues/28) | Redesign demo dashboard UI | Open |
+| [#29](https://github.com/tmestery/SPECTRE/issues/29)–[#34](https://github.com/tmestery/SPECTRE/issues/34) | Judging schemas, agents, orchestrator, UI | Open |
+| [#35](https://github.com/tmestery/SPECTRE/issues/35) | Sync roadmap docs | This update |
+| [#36](https://github.com/tmestery/SPECTRE/issues/36) | mypy typed CI | Open |
+| [#37](https://github.com/tmestery/SPECTRE/issues/37) | A/B handoff thresholds | Open |
+| [#38](https://github.com/tmestery/SPECTRE/issues/38) | `validation_failed_retry` handoff | Open |
+| [#41](https://github.com/tmestery/SPECTRE/issues/41) | README refresh | End of wave |
 
 ## Tests
 
@@ -78,6 +72,6 @@ N/A — process policy.
 
 ## Changelog
 
+- 2026-06-25 — Synced issue tracker with Phase 4+ work (#35)
 - 2026-06-25 — CI workflow required for merge (#16)
-
 - 2026-06-25 — Initial git workflow doc

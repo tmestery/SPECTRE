@@ -6,7 +6,7 @@
 
 ## Summary
 
-Master build plan for SPECTRE — a multi-agent **GitHub repository security auditing** system with a visual demo. Phases progress from documentation through a working four-agent crew that audits authorized repos for secrets, vulnerable dependencies, and misconfigurations.
+Master build plan for SPECTRE — a multi-agent **GitHub repository security auditing** system with a visual demo. Phases 0–3 are complete; Phase 4 research instrumentation and judging work continues.
 
 ## Context
 
@@ -24,42 +24,42 @@ How do agents **coordinate**, **share findings**, and **decide what to hand off*
 - Mass org-wide or GitHub search sweeps
 - Auto-opening PRs or committing fixes without human approval
 - Cloud deployment or SaaS multi-tenancy
-- Network pen test against web apps (DVWA optional Phase 4)
+- Network pen test against web apps (DVWA optional / deprecated for v1)
 
 ## Implementation
 
-### Phase 0 — Foundation (current)
+### Phase 0 — Foundation (complete)
 
-**Goal:** Documentation, schemas, project conventions, empty scaffold.
+**Goal:** Documentation, schemas, project conventions, scaffold.
 
 | Deliverable | Status |
 |-------------|--------|
 | `AGENTS.md`, `SKILLS.md`, `.cursor/rules/` | Done |
-| `docs/local/` architecture and agent docs | In progress (GitHub pivot) |
+| `docs/local/` architecture and agent docs | Done |
 | `.cursor/skills/` workflow skills | Done |
 | `.github/` issue and PR templates | Done |
-| Pydantic schemas (`spectre/schemas/`) | Planned |
-| Empty `spectre/`, `src/`, `scopes/` layout | Planned |
+| Pydantic schemas (`spectre/schemas/`) | Done |
+| `spectre/`, `src/`, `scopes/` layout | Done |
 
 **Demo milestone:** Docs complete; agent can scaffold from this plan.
 
-### Phase 1 — Bus + Orchestrator + Recon (GitHub)
+### Phase 1 — Bus + Orchestrator + Recon (complete)
 
 **Goal:** Event-sourced findings bus, orchestrator loop, Recon agent mapping a repo.
 
-| Deliverable | Notes |
-|-------------|-------|
-| Findings Bus | SQLite event store + pub/sub |
-| Repo scope enforcement | `scopes/*.yaml` allowlist, reject out-of-scope repos |
-| GitHub API client | List contents, workflows, languages, clone to temp dir |
-| Orchestrator skeleton | Engagement lifecycle, agent registry |
-| Recon agent | Publishes `repository`, `file`, `workflow`, `dependency` findings |
-| CLI `spectre run --repo` | Start engagement, stream events to stdout |
-| WebSocket server | Broadcast bus events for UI (stub OK) |
+| Deliverable | Status |
+|-------------|--------|
+| Findings Bus | Done — SQLite event store + pub/sub |
+| Repo scope enforcement | Done — `scopes/*.yaml` allowlist |
+| GitHub API client | Done |
+| Orchestrator skeleton | Done |
+| Recon agent | Done |
+| CLI `spectre run --repo` | Done |
+| WebSocket / control server | Done — `spectre serve` |
 
-**Demo milestone:** Recon maps `tmestery/SPECTRE` (or your repo); timeline populates.
+**Demo milestone:** Recon maps an authorized repo; timeline populates.
 
-**Issue seeds:** `#2` findings bus, `#3` repo scope, `#4` recon agent + GitHub API
+**Issues:** #2–#7 (closed)
 
 ### Phase 2 — VulnHunter + Exploiter (complete)
 
@@ -67,7 +67,7 @@ How do agents **coordinate**, **share findings**, and **decide what to hand off*
 
 | Deliverable | Status |
 |-------------|--------|
-| Handoff protocol v1 | Done (Phase 1) |
+| Handoff protocol v1 | Done |
 | VulnHunter agent | Done — gitleaks fallback, osv-scanner, workflow analyzer |
 | Exploiter agent | Done — format/reachability/workflow validation |
 | Audit log | Done |
@@ -75,7 +75,7 @@ How do agents **coordinate**, **share findings**, and **decide what to hand off*
 
 **Demo milestone:** Agents hand off; Exploiter confirms secrets or workflow misconfigs.
 
-**Issues:** #8, #9 (closed in PR #18)
+**Issues:** #8, #9 (closed)
 
 ### Phase 3 — Reporter + Demo UI (complete)
 
@@ -83,30 +83,33 @@ How do agents **coordinate**, **share findings**, and **decide what to hand off*
 
 | Deliverable | Status |
 |-------------|--------|
-| Reporter agent | Done — markdown/HTML export, GitHub permalinks, `report_section` events |
-| Demo UI (`src/`) | Done — chat, timeline, handoffs, live report, halt |
-| WebSocket integration | Done — relays full engagement event stream |
-| Kill switch | Done — UI + CLI `spectre halt --session` |
+| Reporter agent | Done — markdown/HTML export, GitHub permalinks |
+| Demo UI (`src/`) | Done — functional; visual redesign tracked in #28 |
+| WebSocket integration | Done |
+| Kill switch | Done — UI + CLI |
 | Report export | Done — `spectre report --session <id>` |
+| LLM + reasoning loop | Done — Groq subagents + `AgentReasoningLoop` |
 
 **Demo milestone:** Full recorded demo — recon through report on authorized repo.
 
-**Issues:** #10, #11, #12
+**Issues:** #10, #11, #12 (closed)
 
-### Phase 4 — Research instrumentation
+### Phase 4 — Research instrumentation (in progress)
 
-**Goal:** Export coordination data for analysis and demo narrative.
+**Goal:** Export coordination data for analysis, demo narrative, and judging layer.
 
-| Deliverable | Notes |
-|-------------|-------|
-| Handoff decision log | Structured JSON per activation |
-| Coordination metrics | Time-to-handoff, findings-per-agent, false positive rate |
-| Replay mode | Re-run engagement from event log |
-| Vulnerable sample repo | Curated test repo with planted findings for repeatable demos |
+| Deliverable | Status | Issue |
+|-------------|--------|-------|
+| Coordination metrics + handoff JSONL | Done — `spectre metrics` | [#14](https://github.com/tmestery/SPECTRE/issues/14) |
+| Engagement replay | Done — `spectre replay` | [#15](https://github.com/tmestery/SPECTRE/issues/15) |
+| CI pipeline | Done | [#16](https://github.com/tmestery/SPECTRE/issues/16) |
+| Judging agent ADR | Done (design) | [#22](https://github.com/tmestery/SPECTRE/issues/22) |
+| Vulnerable sample repo | Open | [#13](https://github.com/tmestery/SPECTRE/issues/13) |
+| Demo UI redesign | Open | [#28](https://github.com/tmestery/SPECTRE/issues/28) |
+| Judging schemas + agents | Open | [#29](https://github.com/tmestery/SPECTRE/issues/29)–[#34](https://github.com/tmestery/SPECTRE/issues/34) |
+| README refresh | Open (end of wave) | [#41](https://github.com/tmestery/SPECTRE/issues/41) |
 
-**Demo milestone:** Export session log; replay audit on sample repo.
-
-**Issue seeds:** `#12` handoff logging, `#13` replay, `#14` sample repo
+**Demo milestone:** Export session metrics; replay audit; optional sample-repo demo.
 
 ## Architecture decisions (locked for v1)
 
@@ -117,13 +120,14 @@ How do agents **coordinate**, **share findings**, and **decide what to hand off*
 | Primary language | Python orchestration + TS UI | GitHub API + security tool ecosystem |
 | LLM integration | Groq default; tool-calling agents | Fast demo inference |
 | Event store | SQLite per session | Simple, inspectable |
-| UI framework | Vite + React | Matches SanFran3D conventions |
+| UI framework | Vite + React | Fast local demo UI |
+| Judging (v1) | Advisory only | Bus-first verdicts; do not block handoffs |
 
-## Open questions (resolve in Phase 1)
+## Open questions
 
-1. **LangGraph vs custom loop** — spike in scaffold issue.
-2. **Clone vs API-only** — clone needed for gitleaks history; API for metadata. Hybrid likely.
-3. **Exploiter boundaries** — validate secrets with read-only checks only; no destructive API calls.
+1. **Judging blocking mode (v2)** — when to pause handoffs on `reject` (critical-only?).
+2. **Sample repo hosting** — dedicated planted-findings repo vs fixtures in this monorepo (#13).
+3. **Exploiter boundaries** — keep validation read-only; no destructive API calls.
 
 ## Tests
 
@@ -131,6 +135,7 @@ N/A — planning doc. Each phase deliverable follows [local-dev-standards.md](lo
 
 ## Changelog
 
-- 2026-06-26 — Phase 3 complete (Reporter + Demo UI + WebSocket, PR pending)
+- 2026-06-25 — Synced Phase 0–4 status and issue numbers (#35)
+- 2026-06-26 — Phase 3 complete (Reporter + Demo UI + WebSocket)
 - 2026-06-25 — Pivot primary target from DVWA to GitHub repos
 - 2026-06-25 — Initial roadmap
