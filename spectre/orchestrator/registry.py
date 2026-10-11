@@ -4,7 +4,9 @@ from spectre.agents.base import AgentContext
 from spectre.agents.cognitive import get_cognitive_runtime
 from spectre.agents.exploiter.agent import ExploiterAgent
 from spectre.agents.finding_judge.agent import FindingJudgeAgent
+from spectre.agents.handoff_judge.agent import HandoffJudgeAgent
 from spectre.agents.recon.agent import ReconAgent
+from spectre.agents.report_judge.agent import ReportJudgeAgent
 from spectre.agents.reporter.agent import ReporterAgent
 from spectre.agents.routing.registry import CognitiveRuntime
 from spectre.agents.vuln_hunter.agent import VulnHunterAgent
@@ -23,6 +25,8 @@ class AgentRegistry:
             "exploiter": ExploiterAgent(self._cognitive),
             "reporter": ReporterAgent(self._cognitive),
             "finding_judge": FindingJudgeAgent(self._cognitive),
+            "handoff_judge": HandoffJudgeAgent(self._cognitive),
+            "report_judge": ReportJudgeAgent(self._cognitive),
         }
 
     def get(self, agent_id: str):
