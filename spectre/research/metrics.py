@@ -38,6 +38,7 @@ class CoordinationMetrics:
     judgment_count: int = 0
     handoff_verdict_count: int = 0
     report_verdict_count: int = 0
+    handoff_profile: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         data = asdict(self)
@@ -108,6 +109,9 @@ def compute_metrics(session_id: str, events: list[BusEvent], findings: list) -> 
     judgment_count = sum(1 for f in findings if f.type == FindingType.JUDGMENT)
     handoff_verdict_count = sum(1 for e in events if e.type == EventType.HANDOFF_VERDICT)
     report_verdict_count = sum(1 for e in events if e.type == EventType.REPORT_VERDICT)
+    handoff_profile = None
+    if started.payload.get("handoff_profile"):
+        handoff_profile = str(started.payload["handoff_profile"])
 
     return CoordinationMetrics(
         session_id=session_id,
@@ -123,6 +127,7 @@ def compute_metrics(session_id: str, events: list[BusEvent], findings: list) -> 
         judgment_count=judgment_count,
         handoff_verdict_count=handoff_verdict_count,
         report_verdict_count=report_verdict_count,
+        handoff_profile=handoff_profile,
     )
 
 

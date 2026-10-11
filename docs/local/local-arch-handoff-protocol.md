@@ -1,8 +1,8 @@
 # local-arch-handoff-protocol
 
 **Status:** active  
-**Updated:** 2026-06-25  
-**Related:** [local-arch-agent-crew.md](local-arch-agent-crew.md), [local-arch-judging-agents.md](local-arch-judging-agents.md), [local-target-github-repo.md](local-target-github-repo.md)
+**Updated:** 2026-10-10  
+**Related:** [local-arch-agent-crew.md](local-arch-agent-crew.md), [local-arch-judging-agents.md](local-arch-judging-agents.md), [local-arch-handoff-profiles.md](local-arch-handoff-profiles.md), [local-target-github-repo.md](local-target-github-repo.md)
 
 ## Summary
 
@@ -47,15 +47,17 @@ rationale: "Recon mapped repo structure with at least one scannable surface."
 
 #### R2: VulnHunter → Exploiter
 
+Thresholds come from the active handoff profile (see [local-arch-handoff-profiles.md](local-arch-handoff-profiles.md)). Defaults below match `handoff_profiles/default.yaml`.
+
 ```yaml
 name: actionable_finding
 from: vuln_hunter
 to: exploiter
 when:
   any:
-    - finding.type == secret AND finding.confidence >= 0.8
-    - finding.type == vulnerability AND finding.evidence.exploitability >= 0.7
-    - finding.type == misconfiguration AND finding.severity in [high, critical]
+    - finding.type == secret AND finding.confidence >= profile.secret_confidence_min  # default 0.8
+    - finding.type == vulnerability AND finding.evidence.exploitability >= profile.vulnerability_exploitability_min  # default 0.7
+    - finding.type == misconfiguration AND finding.severity in profile.misconfiguration_severities  # default [high, critical]
 rationale: "VulnHunter found a secret, CVE, or high-severity misconfig worth validating."
 ```
 
@@ -139,6 +141,7 @@ Blocking mode (v2) may pause transitions on `reject` for critical findings only 
 
 ## Changelog
 
+- 2026-10-10 — R2 thresholds loaded from handoff profiles (#37)
 - 2026-06-25 — Implemented bounded `validation_failed_retry` (#38)
 - 2026-06-25 — Added advisory judge touchpoints (#22)
 - 2026-06-25 — Rewrote rules for GitHub repo auditing

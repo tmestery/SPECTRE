@@ -1,0 +1,6 @@
+name: strict
+description: Higher bars for actionable handoffs — fewer Exploiter activations
+secret_confidence_min: 0.92
+vulnerability_exploitability_min: 0.85
+misconfiguration_severities:
+  - critical

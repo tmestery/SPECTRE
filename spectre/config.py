@@ -25,6 +25,8 @@ class Settings(BaseSettings):
     anthropic_api_key: str = ""
     agent_reasoning_max_steps: int = 6
     judges_enabled: bool = True
+    handoff_profile: str = "default"
+    handoff_profiles_dir: Path = Path("handoff_profiles")
 
     @property
     def llm_api_key(self) -> str:

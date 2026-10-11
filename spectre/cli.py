@@ -24,6 +24,11 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--repo", required=True, help="owner/repo slug")
     run.add_argument("--scope", required=True, type=Path, help="Path to scope yaml")
     run.add_argument("--branch", default="main", help="Branch to audit")
+    run.add_argument(
+        "--handoff-profile",
+        default=None,
+        help="Handoff threshold profile name (default|strict, or HANDOFF_PROFILE)",
+    )
     run.add_argument("--ws", action="store_true", help="Start WebSocket event stream")
 
     serve = sub.add_parser("serve", help="Start WebSocket control server for the demo UI")
@@ -91,7 +96,12 @@ async def _run_engagement(args: argparse.Namespace) -> int:
         print(f"error: repo not in scope: {args.repo}", file=sys.stderr)
         return 1
 
-    engagement = create_engagement(args.repo, args.branch, scope)
+    engagement = create_engagement(
+        args.repo,
+        args.branch,
+        scope,
+        handoff_profile=args.handoff_profile,
+    )
     session_dir = settings.spectre_data_dir / engagement.id
     bus = FindingsBus(session_dir / "events.db")
     await bus.connect()
