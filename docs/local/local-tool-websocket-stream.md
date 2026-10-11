@@ -12,7 +12,7 @@ WebSocket server relays Findings Bus events to the demo UI in real time. Clients
 
 ### Relayed event types
 
-`engagement_started`, `agent_activated`, `agent_message`, `finding`, `handoff_decision`, `tool_invocation`, `report_section`, `engagement_halted`, `engagement_complete`
+`engagement_started`, `agent_activated`, `agent_message`, `finding`, `handoff_decision`, `handoff_verdict`, `tool_invocation`, `report_section`, `report_verdict`, `engagement_halted`, `engagement_complete`
 
 ### Halt protocol
 

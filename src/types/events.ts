@@ -4,10 +4,12 @@ export type EventType =
   | "agent_message"
   | "finding"
   | "handoff_decision"
+  | "handoff_verdict"
   | "tool_invocation"
   | "llm_invocation"
   | "subagent_activated"
   | "report_section"
+  | "report_verdict"
   | "engagement_halted"
   | "engagement_complete";
 

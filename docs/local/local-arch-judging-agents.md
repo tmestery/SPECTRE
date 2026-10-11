@@ -96,16 +96,22 @@ sequenceDiagram
     E->>B: validation_attempt
 ```
 
-## Schemas (planned)
+## Schemas (implemented)
+
+Module: `spectre/schemas/judging.py`
 
 ### Finding type
 
-- `judgment` — links to reviewed finding via `related_ids`; evidence includes `verdict` (`uphold` \| `downgrade` \| `dismiss`), `rationale`, `reviewed_finding_id`
+- `FindingType.JUDGMENT` — links to reviewed finding via `related_ids`; evidence includes `verdict` (`uphold` \| `downgrade` \| `dismiss`), `rationale`, `reviewed_finding_id`
+- Helper: `make_judgment_finding(...)`
 
 ### Event types
 
-- `handoff_verdict` — `{ decision_id, verdict: approve|defer|reject, rationale, advisory: true }`
-- `report_verdict` — `{ report_section_ids, verdict: accept|revise, issues: [...], advisory: true }`
+- `EventType.HANDOFF_VERDICT` — `{ decision_id, verdict: approve|defer|reject, rationale, advisory: true }`
+- `EventType.REPORT_VERDICT` — `{ report_section_ids, verdict: accept|revise, issues: [...], rationale, advisory: true }`
+- Helpers: `handoff_verdict_event`, `report_verdict_event`
+- v1: `advisory` must be `true` (validated by Pydantic)
+- Relayed on the WebSocket stream; UI types accept the events (visual badges in #34)
 
 ## Safety
 
@@ -146,4 +152,5 @@ Related follow-ons: [#28](https://github.com/tmestery/SPECTRE/issues/28) demo UI
 
 ## Changelog
 
+- 2026-06-25 — Schemas implemented in `spectre/schemas/judging.py` (#29)
 - 2026-06-25 — ADR for judging agent layer; open questions resolved (#22)

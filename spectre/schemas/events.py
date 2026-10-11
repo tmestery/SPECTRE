@@ -14,11 +14,13 @@ class EventType(str, Enum):
     AGENT_MESSAGE = "agent_message"
     FINDING = "finding"
     HANDOFF_DECISION = "handoff_decision"
+    HANDOFF_VERDICT = "handoff_verdict"
     TOOL_INVOCATION = "tool_invocation"
     LLM_INVOCATION = "llm_invocation"
     SUBAGENT_ACTIVATED = "subagent_activated"
     ENGAGEMENT_HALTED = "engagement_halted"
     REPORT_SECTION = "report_section"
+    REPORT_VERDICT = "report_verdict"
     ENGAGEMENT_COMPLETE = "engagement_complete"
 
 
