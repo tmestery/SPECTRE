@@ -25,6 +25,7 @@ class Engagement(BaseModel):
     workspace_path: str | None = None
     started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     max_duration_minutes: int = 30
+    handoff_profile: str = "default"
 
 
 class AgentResultStatus(str, Enum):

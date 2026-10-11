@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from spectre.bus.store import FindingsBus
+from spectre.orchestrator.profiles import DEFAULT_PROFILE, HandoffProfile, load_handoff_profile
 from spectre.schemas.engagement import AgentResult, AgentResultStatus, Engagement
 from spectre.schemas.events import BusEvent, EventType
 from spectre.schemas.finding import Finding, FindingStatus, FindingType, Severity
@@ -21,8 +22,9 @@ class HandoffDecision:
 
 
 class HandoffEngine:
-    def __init__(self, scope: RepoScope) -> None:
+    def __init__(self, scope: RepoScope, profile: HandoffProfile | None = None) -> None:
         self.scope = scope
+        self.profile = profile or DEFAULT_PROFILE
 
     async def evaluate(
         self,
@@ -112,21 +114,7 @@ class HandoffEngine:
     def _evaluate_vuln_hunter(
         self, findings: list[Finding], from_agent: str, result: AgentResult
     ) -> HandoffDecision:
-        actionable = [
-            f
-            for f in findings
-            if (
-                (f.type == FindingType.SECRET and f.confidence >= 0.8)
-                or (
-                    f.type == FindingType.VULNERABILITY
-                    and f.evidence.get("exploitability", 0) >= 0.7
-                )
-                or (
-                    f.type == FindingType.MISCONFIGURATION
-                    and f.severity in {Severity.HIGH, Severity.CRITICAL}
-                )
-            )
-        ]
+        actionable = [f for f in findings if self._is_actionable(f)]
         if actionable:
             return self._decision(
                 "actionable_finding",
@@ -171,20 +159,7 @@ class HandoffEngine:
             and f.status == FindingStatus.FALSE_POSITIVE
         ]
         pending_actionable = [
-            f
-            for f in findings
-            if f.status == FindingStatus.TENTATIVE
-            and (
-                (f.type == FindingType.SECRET and f.confidence >= 0.8)
-                or (
-                    f.type == FindingType.VULNERABILITY
-                    and f.evidence.get("exploitability", 0) >= 0.7
-                )
-                or (
-                    f.type == FindingType.MISCONFIGURATION
-                    and f.severity in {Severity.HIGH, Severity.CRITICAL}
-                )
-            )
+            f for f in findings if f.status == FindingStatus.TENTATIVE and self._is_actionable(f)
         ]
         retry_count = await self._count_validation_failed_retries(bus)
         if (
@@ -230,6 +205,23 @@ class HandoffEngine:
             for event in events
             if event.payload.get("rule") == "validation_failed_retry"
         )
+
+    def _is_actionable(self, finding: Finding) -> bool:
+        if finding.type == FindingType.SECRET:
+            return finding.confidence >= self.profile.secret_confidence_min
+        if finding.type == FindingType.VULNERABILITY:
+            return (
+                float(finding.evidence.get("exploitability", 0) or 0)
+                >= self.profile.vulnerability_exploitability_min
+            )
+        if finding.type == FindingType.MISCONFIGURATION:
+            return finding.severity in self.profile.misconfig_severity_set()
+        return False
+
+    @classmethod
+    def from_engagement(cls, engagement: Engagement) -> "HandoffEngine":
+        profile = load_handoff_profile(engagement.handoff_profile)
+        return cls(engagement.scope, profile)
 
     def _decision(
         self,

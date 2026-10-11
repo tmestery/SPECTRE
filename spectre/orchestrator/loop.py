@@ -5,6 +5,7 @@ from pathlib import Path
 from spectre.bus.store import FindingsBus
 from spectre.config import settings
 from spectre.orchestrator.handoffs import HandoffEngine
+from spectre.orchestrator.profiles import load_handoff_profile
 from spectre.orchestrator.registry import AgentRegistry
 from spectre.research.metrics import export_session_metrics
 from spectre.safety.halt import clear_halt, is_halt_requested
@@ -34,7 +35,9 @@ class Orchestrator:
         enforcer.check_branch(engagement.branch)
 
         engagement.status = EngagementStatus.RUNNING
-        handoffs = HandoffEngine(engagement.scope)
+        profile = load_handoff_profile(engagement.handoff_profile)
+        engagement.handoff_profile = profile.name
+        handoffs = HandoffEngine(engagement.scope, profile)
 
         await self.bus.publish(
             BusEvent(
@@ -45,6 +48,7 @@ class Orchestrator:
                     "repo": engagement.repo,
                     "branch": engagement.branch,
                     "scope": engagement.scope.model_dump(),
+                    "handoff_profile": profile.name,
                 },
             )
         )
@@ -144,10 +148,17 @@ class Orchestrator:
             logger.exception("Advisory judge %s failed; continuing engagement", agent_id)
 
 
-def create_engagement(repo: str, branch: str, scope: RepoScope) -> Engagement:
+def create_engagement(
+    repo: str,
+    branch: str,
+    scope: RepoScope,
+    *,
+    handoff_profile: str | None = None,
+) -> Engagement:
     return Engagement(
         repo=repo,
         branch=branch,
         scope=scope,
         max_duration_minutes=scope.max_duration_minutes,
+        handoff_profile=handoff_profile or settings.handoff_profile,
     )

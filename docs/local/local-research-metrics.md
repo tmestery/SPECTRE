@@ -1,8 +1,8 @@
 # local-research-metrics
 
 **Status:** active  
-**Updated:** 2026-06-25  
-**Related:** [local-arch-handoff-protocol.md](local-arch-handoff-protocol.md), [local-plan-roadmap.md](local-plan-roadmap.md), issue #14
+**Updated:** 2026-10-10  
+**Related:** [local-arch-handoff-protocol.md](local-arch-handoff-protocol.md), [local-arch-handoff-profiles.md](local-arch-handoff-profiles.md), [local-plan-roadmap.md](local-plan-roadmap.md), issue #14, issue #37
 
 ## Summary
 
@@ -34,6 +34,7 @@ Phase 4 studies how agents coordinate. The Findings Bus remains the source of tr
 | `total_findings` / `total_handoffs` | Totals |
 | `judgment_count` | Count of `judgment` findings |
 | `handoff_verdict_count` / `report_verdict_count` | Advisory judge verdict events |
+| `handoff_profile` | Profile name from `engagement_started` (`null` if absent) |
 
 ### CLI
 
@@ -63,4 +64,5 @@ When an engagement finishes, the orchestrator writes the same artifacts to the s
 
 ## Changelog
 
+- 2026-10-10 — Record `handoff_profile` in metrics (#37)
 - 2026-06-25 — Initial coordination metrics export (#14)
