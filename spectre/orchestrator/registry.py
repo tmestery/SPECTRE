@@ -3,6 +3,7 @@ from uuid import uuid4
 from spectre.agents.base import AgentContext
 from spectre.agents.cognitive import get_cognitive_runtime
 from spectre.agents.exploiter.agent import ExploiterAgent
+from spectre.agents.finding_judge.agent import FindingJudgeAgent
 from spectre.agents.recon.agent import ReconAgent
 from spectre.agents.reporter.agent import ReporterAgent
 from spectre.agents.routing.registry import CognitiveRuntime
@@ -21,6 +22,7 @@ class AgentRegistry:
             "vuln_hunter": VulnHunterAgent(self._cognitive),
             "exploiter": ExploiterAgent(self._cognitive),
             "reporter": ReporterAgent(self._cognitive),
+            "finding_judge": FindingJudgeAgent(self._cognitive),
         }
 
     def get(self, agent_id: str):

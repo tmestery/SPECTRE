@@ -43,6 +43,7 @@ local-<area>-<topic>.md
 | [local-agent-vuln-hunter.md](local-agent-vuln-hunter.md) | VulnHunter — secrets, CVEs, workflows |
 | [local-agent-exploiter.md](local-agent-exploiter.md) | Exploiter — finding validation |
 | [local-agent-reporter.md](local-agent-reporter.md) | Reporter — repo security report |
+| [local-agent-finding-judge.md](local-agent-finding-judge.md) | Finding Judge — advisory judgment findings |
 | [local-ui-demo-dashboard.md](local-ui-demo-dashboard.md) | Demo UI design |
 | [local-tool-websocket-stream.md](local-tool-websocket-stream.md) | WebSocket event stream + halt |
 | [local-test-strategy.md](local-test-strategy.md) | pytest, vitest, fixtures |
