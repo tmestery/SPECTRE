@@ -35,6 +35,9 @@ class CoordinationMetrics:
     validation_false_positive: int
     total_findings: int
     total_handoffs: int
+    judgment_count: int = 0
+    handoff_verdict_count: int = 0
+    report_verdict_count: int = 0
 
     def to_dict(self) -> dict[str, Any]:
         data = asdict(self)
@@ -102,6 +105,10 @@ def compute_metrics(session_id: str, events: list[BusEvent], findings: list) -> 
     denom = confirmed + false_pos
     fp_rate: float | None = (false_pos / denom) if denom > 0 else None
 
+    judgment_count = sum(1 for f in findings if f.type == FindingType.JUDGMENT)
+    handoff_verdict_count = sum(1 for e in events if e.type == EventType.HANDOFF_VERDICT)
+    report_verdict_count = sum(1 for e in events if e.type == EventType.REPORT_VERDICT)
+
     return CoordinationMetrics(
         session_id=session_id,
         time_to_first_finding_seconds=time_to_first,
@@ -113,6 +120,9 @@ def compute_metrics(session_id: str, events: list[BusEvent], findings: list) -> 
         validation_false_positive=false_pos,
         total_findings=len(findings),
         total_handoffs=len(handoff_timings),
+        judgment_count=judgment_count,
+        handoff_verdict_count=handoff_verdict_count,
+        report_verdict_count=report_verdict_count,
     )
 
 

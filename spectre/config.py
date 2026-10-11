@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     anthropic_api_key: str = ""
     agent_reasoning_max_steps: int = 6
+    judges_enabled: bool = True
 
     @property
     def llm_api_key(self) -> str:
