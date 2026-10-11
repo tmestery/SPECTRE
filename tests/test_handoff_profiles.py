@@ -6,9 +6,9 @@ import pytest
 
 from spectre.orchestrator.handoffs import HandoffEngine
 from spectre.orchestrator.profiles import load_handoff_profile
+from spectre.research.metrics import compute_metrics
 from spectre.schemas.engagement import AgentResult, AgentResultStatus, Engagement
 from spectre.schemas.events import BusEvent, EventType
-from spectre.research.metrics import compute_metrics
 from spectre.schemas.finding import Finding, FindingType
 from spectre.schemas.scope import RepoScope
 
