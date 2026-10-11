@@ -72,6 +72,22 @@ when:
 rationale: "Finding validated or all validation attempts exhausted with reportable issues."
 ```
 
+#### R3b: Exploiter → VulnHunter (bounded retry)
+
+```yaml
+name: validation_failed_retry
+from: exploiter
+to: vuln_hunter
+when:
+  all:
+    - count(validation_attempt where status == false_positive) >= 1
+    - count(tentative actionable findings) >= 1
+    - count(prior handoff_decision where rule == validation_failed_retry) < MAX_VALIDATION_FAILED_RETRIES
+rationale: "Exploiter rejected validations while actionable findings remain; ask VulnHunter to rescan once."
+```
+
+`MAX_VALIDATION_FAILED_RETRIES` is `1` in `spectre/orchestrator/handoffs.py`. Confirmed validations always take R3 and skip retry.
+
 #### R4: Engagement timeout
 
 ```yaml
@@ -114,11 +130,16 @@ Blocking mode (v2) may pause transitions on `reject` for critical findings only 
 | R1 fires when repo + file findings exist | Positive |
 | R1 does not fire for out-of-scope repo slug | Negative |
 | R2 does not fire when secret confidence < 0.8 | Negative |
+| R3b fires on false positives with pending actionable | Positive |
+| R3b does not fire after max retries | Negative |
+| R3b does not fire when a validation is confirmed | Negative |
+| R3b does not fire without pending actionable findings | Negative |
 | R4 fires on timeout | Negative |
 | Handoff event has required fields | Negative |
 
 ## Changelog
 
+- 2026-06-25 — Implemented bounded `validation_failed_retry` (#38)
 - 2026-06-25 — Added advisory judge touchpoints (#22)
 - 2026-06-25 — Rewrote rules for GitHub repo auditing
 - 2026-06-25 — Initial handoff protocol

@@ -7,6 +7,9 @@ from spectre.schemas.events import BusEvent, EventType
 from spectre.schemas.finding import Finding, FindingStatus, FindingType, Severity
 from spectre.schemas.scope import RepoScope
 
+# Cap Exploiter → VulnHunter retries to avoid infinite loops.
+MAX_VALIDATION_FAILED_RETRIES = 1
+
 
 @dataclass
 class HandoffDecision:
@@ -59,7 +62,7 @@ class HandoffEngine:
             return self._evaluate_vuln_hunter(findings, from_agent, result)
 
         if from_agent == "exploiter":
-            return self._evaluate_exploiter(findings, from_agent, result)
+            return await self._evaluate_exploiter(bus, findings, from_agent, result)
 
         if from_agent == "reporter":
             return HandoffDecision(
@@ -140,8 +143,12 @@ class HandoffEngine:
             [],
         )
 
-    def _evaluate_exploiter(
-        self, findings: list[Finding], from_agent: str, result: AgentResult
+    async def _evaluate_exploiter(
+        self,
+        bus: FindingsBus,
+        findings: list[Finding],
+        from_agent: str,
+        result: AgentResult,
     ) -> HandoffDecision:
         validated = [
             f
@@ -156,7 +163,50 @@ class HandoffEngine:
                 "Exploiter validated at least one finding.",
                 [f.id for f in validated],
             )
-        reportable = [f for f in findings if f.severity in {Severity.MEDIUM, Severity.HIGH, Severity.CRITICAL}]
+
+        false_positives = [
+            f
+            for f in findings
+            if f.type == FindingType.VALIDATION_ATTEMPT
+            and f.status == FindingStatus.FALSE_POSITIVE
+        ]
+        pending_actionable = [
+            f
+            for f in findings
+            if f.status == FindingStatus.TENTATIVE
+            and (
+                (f.type == FindingType.SECRET and f.confidence >= 0.8)
+                or (
+                    f.type == FindingType.VULNERABILITY
+                    and f.evidence.get("exploitability", 0) >= 0.7
+                )
+                or (
+                    f.type == FindingType.MISCONFIGURATION
+                    and f.severity in {Severity.HIGH, Severity.CRITICAL}
+                )
+            )
+        ]
+        retry_count = await self._count_validation_failed_retries(bus)
+        if (
+            false_positives
+            and pending_actionable
+            and retry_count < MAX_VALIDATION_FAILED_RETRIES
+        ):
+            return self._decision(
+                "validation_failed_retry",
+                from_agent,
+                "vuln_hunter",
+                (
+                    "Exploiter marked validations as false positives while actionable "
+                    f"findings remain; retrying VulnHunter "
+                    f"(attempt {retry_count + 1}/{MAX_VALIDATION_FAILED_RETRIES})."
+                ),
+                [f.id for f in false_positives[:3] + pending_actionable[:3]],
+            )
+
+        reportable = [
+            f for f in findings if f.severity in {Severity.MEDIUM, Severity.HIGH, Severity.CRITICAL}
+        ]
         if result.status == AgentResultStatus.EXHAUSTED and reportable:
             return self._decision(
                 "validations_exhausted",
@@ -171,6 +221,14 @@ class HandoffEngine:
             "reporter",
             "No validations to report.",
             [],
+        )
+
+    async def _count_validation_failed_retries(self, bus: FindingsBus) -> int:
+        events = await bus.all_events(types=[EventType.HANDOFF_DECISION])
+        return sum(
+            1
+            for event in events
+            if event.payload.get("rule") == "validation_failed_retry"
         )
 
     def _decision(
