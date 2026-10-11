@@ -8,9 +8,32 @@
       name="description"
       content="SPECTRE demo dashboard — watch a multi-agent crew audit an authorized GitHub repository."
     />
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #14181e;
+        color: #ebe6dc;
+      }
+      #boot-shell {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: Georgia, "Times New Roman", serif;
+        letter-spacing: 0.12em;
+      }
+      #boot-shell p {
+        margin: 0;
+        font-size: clamp(2.4rem, 7vw, 3.6rem);
+        font-weight: 700;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="boot-shell" aria-hidden="true"><p>SPECTRE</p></div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

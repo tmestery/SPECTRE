@@ -14,6 +14,7 @@ function baseState(): EngagementState {
     handoffs: [],
     reportSections: [],
     reportVerdict: null,
+    activeAgent: null,
     status: "running",
     error: null,
     defaults: null,
@@ -151,3 +152,40 @@ describe("applyEvent verdict wiring", () => {
     expect(state.reportSections[0].verdict?.verdict).toBe("revise");
   });
 });
+
+describe("applyEvent activeAgent", () => {
+  it("sets activeAgent from agent_activated for crew agents", () => {
+    const state = applyEvent(
+      baseState(),
+      event({
+        type: "agent_activated",
+        payload: { agent: "vuln_hunter", activation_id: "a1" },
+      }),
+    );
+    expect(state.activeAgent).toBe("vuln_hunter");
+  });
+
+  it("ignores judge agent_activated for stage focus", () => {
+    const state = applyEvent(
+      baseState(),
+      event({
+        type: "agent_activated",
+        payload: { agent: "finding_judge", activation_id: "a2" },
+      }),
+    );
+    expect(state.activeAgent).toBeNull();
+  });
+
+  it("updates activeAgent from crew agent_message", () => {
+    const state = applyEvent(
+      baseState(),
+      event({
+        type: "agent_message",
+        payload: { agent: "exploiter", message: "validating" },
+      }),
+    );
+    expect(state.activeAgent).toBe("exploiter");
+    expect(state.messages).toHaveLength(1);
+  });
+});
+

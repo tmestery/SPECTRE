@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { isCrewAgent } from "../lib/agents";
 import type {
   AgentMessage,
   BusEvent,
@@ -45,6 +46,7 @@ export interface EngagementState {
   handoffs: HandoffDecision[];
   reportSections: ReportSection[];
   reportVerdict: ReportVerdict | null;
+  activeAgent: string | null;
   status: "idle" | "running" | "complete" | "halted";
   error: string | null;
   defaults: EngagementDefaults | null;
@@ -68,6 +70,7 @@ const INITIAL: EngagementState = {
   handoffs: [],
   reportSections: [],
   reportVerdict: null,
+  activeAgent: null,
   status: "idle",
   error: null,
   defaults: null,
@@ -94,17 +97,29 @@ export function applyEvent(state: EngagementState, event: BusEvent): EngagementS
         scopeName: String((event.payload.scope as { name?: string })?.name ?? ""),
       };
       break;
-    case "agent_message":
+    case "agent_activated": {
+      const agent = String(event.payload.agent ?? "");
+      if (agent && isCrewAgent(agent)) {
+        next.activeAgent = agent;
+      }
+      break;
+    }
+    case "agent_message": {
+      const agent = String(event.payload.agent ?? "");
       next.messages = [
         ...next.messages,
         {
-          agent: String(event.payload.agent ?? ""),
+          agent,
           message: String(event.payload.message ?? ""),
           timestamp: event.timestamp,
           subagent: event.payload.subagent ? String(event.payload.subagent) : undefined,
         },
       ];
+      if (agent && isCrewAgent(agent)) {
+        next.activeAgent = agent;
+      }
       break;
+    }
     case "finding": {
       const finding = event.payload.finding as Finding;
       if (finding) {
@@ -343,11 +358,18 @@ export function useEngagementStream() {
     send({ type: "halt", session_id: state.sessionId });
   }, [send, state.sessionId]);
 
+  const reconnect = useCallback(() => {
+    reconnectRef.current = true;
+    socketRef.current?.close();
+    connectSocket();
+  }, [connectSocket]);
+
   return {
     state,
     startEngagement,
     loadSession,
     refreshSessions,
     requestHalt,
+    reconnect,
   };
 }
