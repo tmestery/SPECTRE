@@ -44,6 +44,8 @@ local-<area>-<topic>.md
 | [local-agent-exploiter.md](local-agent-exploiter.md) | Exploiter — finding validation |
 | [local-agent-reporter.md](local-agent-reporter.md) | Reporter — repo security report |
 | [local-agent-finding-judge.md](local-agent-finding-judge.md) | Finding Judge — advisory judgment findings |
+| [local-agent-handoff-judge.md](local-agent-handoff-judge.md) | Handoff Judge — advisory handoff verdicts |
+| [local-agent-report-judge.md](local-agent-report-judge.md) | Report Judge — advisory report verdicts |
 | [local-ui-demo-dashboard.md](local-ui-demo-dashboard.md) | Demo UI design |
 | [local-tool-websocket-stream.md](local-tool-websocket-stream.md) | WebSocket event stream + halt |
 | [local-test-strategy.md](local-test-strategy.md) | pytest, vitest, fixtures |
