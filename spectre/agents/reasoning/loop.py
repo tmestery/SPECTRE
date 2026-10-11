@@ -73,7 +73,9 @@ class AgentReasoningLoop:
                 else:
                     tool_result = await tool.handler(action.params)
                 step_record.tool_result = tool_result
-                result.state.update(tool_result.get("_state", {}))
+                state_update: object = tool_result.get("_state", {})
+                if isinstance(state_update, dict):
+                    result.state.update(state_update)
                 messages.append(LLMMessage(role="assistant", content=json.dumps(action.model_dump())))
                 messages.append(
                     LLMMessage(

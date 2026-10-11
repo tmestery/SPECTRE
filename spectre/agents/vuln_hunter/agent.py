@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 from spectre.agents.base import AgentContext, AgentResult, AgentResultStatus
 from spectre.agents.cognitive import get_cognitive_runtime
@@ -218,7 +219,7 @@ class VulnHunterAgent:
         workspace: Path,
         findings: list,
     ) -> AgentResult:
-        state = {}
+        state: dict[str, Any] = {}
         tools = self._build_tools(ctx, bus, workspace, findings, state)
         await tools["scan_secrets"].handler({})
         await tools["scan_dependencies"].handler({})

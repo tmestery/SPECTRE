@@ -9,8 +9,8 @@ from collections.abc import AsyncIterator, Callable, Coroutine
 from pathlib import Path
 from typing import Any
 
+from websockets.asyncio.server import Server, ServerConnection
 from websockets.exceptions import ConnectionClosed
-from websockets.server import ServerConnection
 
 from spectre.bus.store import FindingsBus
 from spectre.config import settings
@@ -90,10 +90,10 @@ class ReplayWebSocketServer:
         self.session_id = session_id
         self._clients: set[ServerConnection] = set()
 
-    async def start(self) -> asyncio.Server:
+    async def start(self) -> Server:
         return await serve_spectre_ws(self._handler, settings.ws_host, settings.ws_port)
 
-    async def stop(self, server: asyncio.Server) -> None:
+    async def stop(self, server: Server) -> None:
         server.close()
         await server.wait_closed()
         for client in list(self._clients):

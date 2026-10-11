@@ -1,0 +1,31 @@
+name: Chore / tooling
+description: Docs, CI, templates, or repo hygiene (no product behavior change)
+labels: [chore]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What needs cleaning or updating?
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      placeholder: |
+        - [ ]
+        - [ ]
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: impact
+    attributes:
+      label: Impact
+      options:
+        - label: No change to scanning, agents, or scope enforcement
+          required: false
+        - label: Docs or contributor templates only
+          required: false

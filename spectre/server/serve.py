@@ -1,8 +1,8 @@
 import logging
 from collections.abc import Awaitable, Callable
 
-import websockets
-from websockets.server import ServerConnection
+from websockets.asyncio.server import Server, ServerConnection, serve
+from websockets.http11 import Request, Response
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ def _configure_ws_logging() -> None:
         ws_logger.addFilter(_HandshakeNoiseFilter())
 
 
-def process_request(connection: ServerConnection, request) -> websockets.Response | None:
+def process_request(connection: ServerConnection, request: Request) -> Response | None:
     if request.headers.get("Upgrade", "").lower() == "websocket":
         return None
     body = "SPECTRE WebSocket control server — connect with WebSocket upgrade.\n"
@@ -40,9 +40,9 @@ async def serve_spectre_ws(
     handler: Callable[[ServerConnection], Awaitable[None]],
     host: str,
     port: int,
-) -> websockets.Server:
+) -> Server:
     _configure_ws_logging()
-    return await websockets.serve(
+    return await serve(
         handler,
         host,
         port,

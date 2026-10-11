@@ -1,8 +1,8 @@
 # local-dev-repo-layout
 
 **Status:** active  
-**Updated:** 2026-06-25  
-**Related:** [local-arch-overview.md](local-arch-overview.md), issue #40
+**Updated:** 2026-10-10  
+**Related:** [local-arch-overview.md](local-arch-overview.md), [local-dev-github-templates.md](local-dev-github-templates.md), issue #40
 
 ## Summary
 
@@ -37,15 +37,18 @@ Keep at root only:
 | Path | Role |
 |------|------|
 | `dist/` | Vite production build |
-| `reports/*` | Exported audit reports (`.gitkeep` retained) |
-| `data/sessions/*` | Engagement event DBs (`.gitkeep` retained) |
+| `reports/*` | Exported audit reports (`.gitkeep` retained — rest ignored) |
+| `data/sessions/*` | Engagement event DBs (`.gitkeep` retained — rest ignored) |
 | `*.tsbuildinfo` | TypeScript incremental build cache |
 | `.venv/`, `node_modules/` | Local environments |
 
+Do not keep a `.gitkeep` in directories that already have tracked files (e.g. `scopes/` with YAML scope files).
+
 ## Tests
 
-N/A — layout convention.
+N/A — layout convention. Related guardrails in `tests/test_github_templates.py`.
 
 ## Changelog
 
+- 2026-10-10 — Drop redundant `scopes/.gitkeep`; clarify ignore/`gitkeep` policy (#51)
 - 2026-06-25 — Moved logo to `docs/assets/`; documented root hygiene (#40)

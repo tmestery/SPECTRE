@@ -37,7 +37,7 @@ How do agents **coordinate**, **share findings**, and **decide what to hand off*
 | `AGENTS.md`, `SKILLS.md`, `.cursor/rules/` | Done |
 | `docs/local/` architecture and agent docs | Done |
 | `.cursor/skills/` workflow skills | Done |
-| `.github/` issue and PR templates | Done |
+| `.github/` issue and PR templates | Done — see [local-dev-github-templates.md](local-dev-github-templates.md) (#51) |
 | Pydantic schemas (`spectre/schemas/`) | Done |
 | `spectre/`, `src/`, `scopes/` layout | Done |
 

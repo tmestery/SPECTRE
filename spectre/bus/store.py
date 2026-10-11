@@ -48,7 +48,7 @@ class FindingsBus:
         )
         await self._conn.commit()
         row = await self._fetchone("SELECT MAX(sequence_num) FROM events")
-        self._sequence = int(row[0] or 0)
+        self._sequence = int((row[0] if row else None) or 0)
 
     async def close(self) -> None:
         if self._conn:
@@ -188,12 +188,12 @@ class FindingsBus:
     def _session_id_from_path(self) -> str:
         return self.db_path.parent.name
 
-    async def _fetchone(self, sql: str, params: tuple = ()) -> tuple | None:
+    async def _fetchone(self, sql: str, params: tuple = ()) -> aiosqlite.Row | None:
         assert self._conn
         async with self._conn.execute(sql, params) as cursor:
             return await cursor.fetchone()
 
-    async def _fetchall(self, sql: str, params: tuple = ()) -> list[tuple]:
+    async def _fetchall(self, sql: str, params: tuple = ()) -> list[aiosqlite.Row]:
         assert self._conn
         async with self._conn.execute(sql, params) as cursor:
-            return await cursor.fetchall()
+            return list(await cursor.fetchall())

@@ -1,8 +1,8 @@
 # local-dev-git-workflow
 
 **Status:** active  
-**Updated:** 2026-06-25  
-**Related:** `.cursor/skills/git-workflow/SKILL.md`, [local-dev-standards.md](local-dev-standards.md)
+**Updated:** 2026-10-10  
+**Related:** `.cursor/skills/git-workflow/SKILL.md`, [local-dev-standards.md](local-dev-standards.md), [local-dev-github-templates.md](local-dev-github-templates.md)
 
 ## Summary
 
@@ -10,7 +10,7 @@ All SPECTRE work flows through GitHub issues and pull requests. No direct commit
 
 ## Context
 
-Enforced in `.cursor/rules/project.mdc`, **git-workflow** skill, and [AGENTS.md](../../AGENTS.md). GitHub issue and PR templates live in `.github/`.
+Enforced in `.cursor/rules/project.mdc`, **git-workflow** skill, and [AGENTS.md](../../AGENTS.md). GitHub issue and PR templates live in `.github/` — see [local-dev-github-templates.md](local-dev-github-templates.md).
 
 ## Implementation
 
@@ -72,6 +72,7 @@ N/A — process policy.
 
 ## Changelog
 
+- 2026-10-10 — Linked `.github/` template layout doc (#51)
 - 2026-06-25 — Synced issue tracker with Phase 4+ work (#35)
 - 2026-06-25 — CI workflow required for merge (#16)
 - 2026-06-25 — Initial git workflow doc
