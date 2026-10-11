@@ -9,164 +9,84 @@
 </p>
 
 <p align="center">
-  A multi-agent platform for transparent, scope-controlled GitHub repository security audits.
+  Multi-agent GitHub repository security audits with a live dashboard — scope-controlled and observable end to end.
 </p>
 
 <p align="center">
   <img alt="Python 3.12+" src="https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white">
-  <img alt="React 18" src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=111827">
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white">
+  <img alt="Docker" src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
   <img alt="CI" src="https://img.shields.io/github/actions/workflow/status/tmestery/SPECTRE/ci.yml?branch=main&label=CI">
 </p>
 
 ---
 
-SPECTRE coordinates a crew of specialized AI agents to map repository attack
-surfaces, identify security issues, validate evidence, and assemble a report.
-Every finding and handoff is published through a shared event bus, making the
-crew's work observable in a real-time web dashboard.
-
 > [!IMPORTANT]
-> SPECTRE is designed exclusively for repositories you own or have explicit
-> permission to audit. Every engagement is restricted by a repository allowlist.
+> SPECTRE audits only repositories you own or have explicit permission to test.
+> Every engagement requires a scope allowlist (`scopes/*.yaml`). Do not scan
+> arbitrary public repos without authorization.
 
-## What SPECTRE provides
+## What it does
 
-- **Four-agent security crew** — Recon, VulnHunter, Exploiter, and Reporter
-- **Advisory judges** — Finding / Handoff / Report judges publish verdicts without changing deterministic handoffs
-- **Visible coordination** — agent chat, findings, handoffs, and report sections stream over WebSocket
-- **Findings Bus** — event-sourced shared memory for discoveries and validation attempts
-- **Tool wrappers** — sandboxed GitHub API, gitleaks (with fallback), osv-scanner, workflow analyzer
-- **Research exports** — `spectre metrics` (coordination JSON) and `spectre replay` (paced session playback)
-- **Handoff profiles** — swap threshold configs (`default` / `strict`) for A/B experiments
-- **Safety by default** — scope allowlists, secret redaction, audit logs, timeouts, kill switch
+- **Four-agent crew** — Recon, VulnHunter, Exploiter, and Reporter coordinate through a shared Findings Bus
+- **Live dashboard** — Watch findings, handoffs, and report sections stream in real time
+- **Sandboxed tools** — GitHub API, gitleaks, osv-scanner, and workflow checks with timeouts and redaction
+- **Safety by default** — Repo allowlists, audit logs, and an engagement kill switch
 
-## How it works
+## Run with Docker
 
-```mermaid
-flowchart LR
-    Target[(Authorized<br>GitHub repository)]
-    Recon[Recon]
-    Hunter[VulnHunter]
-    Exploiter[Exploiter]
-    Reporter[Reporter]
-    Bus[(Findings Bus)]
-    Judges[Advisory judges]
-    UI[Live dashboard]
-
-    Target --> Recon
-    Recon -->|surface mapped| Bus
-    Bus --> Hunter
-    Hunter -->|candidate findings| Bus
-    Bus --> Exploiter
-    Exploiter -->|validated evidence| Bus
-    Bus --> Reporter
-    Bus --> Judges
-    Bus --> UI
-    Reporter --> Report[Security report]
-```
-
-Agents never call one another directly. They publish structured events to the
-Findings Bus; the orchestrator records each handoff with a human-readable reason.
-Judges emit advisory verdicts only.
-
-## Quick start
-
-### Docker Compose (recommended)
-
-Requirements: Docker with Compose, plus `GITHUB_TOKEN` and an LLM API key (Groq by default).
+**Requirements:** Docker with Compose, a GitHub token, and an LLM API key (Groq by default).
 
 ```bash
 cp .env.example .env
-# Edit .env — set GITHUB_TOKEN and GROQ_API_KEY (or another LLM provider)
+# Set GITHUB_TOKEN and GROQ_API_KEY in .env
+
 docker compose up --build
 ```
 
-Open [http://localhost:8080](http://localhost:8080) and select **Start audit**.
-The compose stack runs nginx (UI) plus `spectre serve` (WebSocket control server).
-Default scope: `scopes/spectre.yaml` (`tmestery/SPECTRE`).
+Open [http://localhost:8080](http://localhost:8080) and choose **Start audit**.
 
-See the [Docker guide](docs/local/local-dev-docker.md).
+| Port | Service |
+|------|---------|
+| `8080` | Demo dashboard |
+| `8765` | WebSocket control plane |
 
-### Local development
-
-Requirements: Python 3.12+, Node.js, npm. Optional: `gitleaks`, `osv-scanner`.
+Optional CLI helpers (reports, halt, sessions):
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
-npm install
-cp .env.example .env
+docker compose --profile cli run --rm cli sessions
 ```
 
+Full details: [Docker guide](docs/local/local-dev-docker.md).
+
+## Configure
+
+| Variable | Purpose |
+|----------|---------|
+| `GITHUB_TOKEN` | Access to authorized target repos |
+| `GROQ_API_KEY` | LLM provider key (when `LLM_PROVIDER=groq`) |
+| `LLM_MODEL` | Model id (see `.env.example`) |
+
+Add a scope file under `scopes/` listing `allowed_repos` before auditing a new target. Defaults ship for this repo (`scopes/spectre.yaml`) and a demo sample (`scopes/vuln-sample.yaml`).
+
+## Local development
+
 ```bash
-# Terminal 1 — control server + WebSocket
-source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]" && npm install && cp .env.example .env
+
+# Terminal 1
 python -m spectre.cli serve
 
-# Terminal 2 — Vite dashboard
-npm run dev
+# Terminal 2
+npm run dev   # http://localhost:5173
 ```
-
-Open [http://localhost:5173](http://localhost:5173).
-
-### CLI engagements
-
-```bash
-# One-shot audit (optional --ws, --handoff-profile strict)
-python -m spectre.cli run \
-  --repo tmestery/spectre-vuln-sample \
-  --scope scopes/vuln-sample.yaml \
-  --branch main
-
-python -m spectre.cli report --session eng_<id>
-python -m spectre.cli metrics --session eng_<id>
-python -m spectre.cli replay --session eng_<id> --speed 2 --ws
-python -m spectre.cli halt --session eng_<id>
-```
-
-Demo sample (fake secrets only): [`tmestery/spectre-vuln-sample`](https://github.com/tmestery/spectre-vuln-sample)
-with `scopes/vuln-sample.yaml`.
-
-## Repository structure
-
-```text
-spectre/           Python orchestration (agents, bus, tools, safety)
-src/               React + TypeScript demo dashboard
-scopes/            Per-engagement repository allowlists
-tests/             Python tests (+ UI fixtures)
-docs/local/        Architecture and development documentation
-docs/assets/       Branding assets (logo)
-```
-
-## Quality checks
-
-```bash
-pytest
-npm test
-npm run build
-```
-
-CI runs on pull requests (pytest, Vitest, production build, gradual mypy).
 
 ## Documentation
 
-- [Agent and contributor guide](AGENTS.md)
-- [Documentation index](docs/local/README.md)
-- [Architecture overview](docs/local/local-arch-overview.md)
-- [Findings Bus](docs/local/local-arch-findings-bus.md)
-- [Handoff protocol](docs/local/local-arch-handoff-protocol.md)
-- [Judging agents](docs/local/local-arch-judging-agents.md)
-- [Demo UI](docs/local/local-ui-demo-dashboard.md)
-- [Safety and repository scope](docs/local/local-safety-lab-scope.md)
-- [Project roadmap](docs/local/local-plan-roadmap.md)
+- [Agent guide](AGENTS.md) · [Docs index](docs/local/README.md)
+- [Architecture](docs/local/local-arch-overview.md) · [Safety & scope](docs/local/local-safety-lab-scope.md)
+- [Docker](docs/local/local-dev-docker.md) · [Demo UI](docs/local/local-ui-demo-dashboard.md)
 
-## Security and responsible use
+## Security
 
-SPECTRE is a defensive research and auditing tool. Do not use it to scan
-repositories without authorization. Keep credentials in `.env`, never commit
-tokens or captured secrets, and review scope files before every engagement.
-
-If you discover a security issue in SPECTRE itself, report it privately to the
-maintainers rather than opening a public issue with exploit details.
+Use SPECTRE only on authorized repositories. Keep tokens in `.env`; never commit secrets or unredacted findings. Report vulnerabilities in SPECTRE privately to the maintainers.
