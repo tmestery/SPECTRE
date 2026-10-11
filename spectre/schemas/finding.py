@@ -16,6 +16,7 @@ class FindingType(str, Enum):
     MISCONFIGURATION = "misconfiguration"
     VULNERABILITY = "vulnerability"
     VALIDATION_ATTEMPT = "validation_attempt"
+    JUDGMENT = "judgment"
     NOTE = "note"
 
 

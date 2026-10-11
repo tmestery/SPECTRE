@@ -18,9 +18,11 @@ RELAYED_EVENTS = [
     EventType.AGENT_MESSAGE,
     EventType.FINDING,
     EventType.HANDOFF_DECISION,
+    EventType.HANDOFF_VERDICT,
     EventType.TOOL_INVOCATION,
     EventType.LLM_INVOCATION,
     EventType.REPORT_SECTION,
+    EventType.REPORT_VERDICT,
     EventType.ENGAGEMENT_HALTED,
     EventType.ENGAGEMENT_COMPLETE,
 ]

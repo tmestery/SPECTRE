@@ -28,9 +28,11 @@ Direct agent-to-agent messaging is intentionally avoided. The bus pattern provid
 | `agent_message` | Any agent | Human-readable summary for demo UI |
 | `finding` | Any agent | Structured discovery/vuln/exploit data |
 | `handoff_decision` | Orchestrator | Rule fired, inputs, outcome |
+| `handoff_verdict` | Handoff Judge | Advisory approve/defer/reject |
 | `tool_invocation` | Tool layer | Audit: tool, target, exit code, duration |
 | `engagement_halted` | Orchestrator/UI | Kill switch, reason |
 | `report_section` | Reporter | Report building blocks |
+| `report_verdict` | Report Judge | Advisory accept/revise |
 | `engagement_complete` | Orchestrator | Final status, report path |
 
 ### Finding schema
@@ -39,7 +41,7 @@ Direct agent-to-agent messaging is intentionally avoided. The bus pattern provid
 # spectre/schemas/finding.py (planned)
 class Finding(BaseModel):
     id: str                    # fnd_<ulid>
-    type: FindingType          # repository | file | dependency | workflow | secret | misconfiguration | vulnerability | validation_attempt | note
+    type: FindingType          # repository | file | dependency | workflow | secret | misconfiguration | vulnerability | validation_attempt | judgment | note
     agent: str                 # recon | vuln_hunter | exploiter | reporter
     target: str                # owner/repo or file path within repo
     severity: Severity         # info | low | medium | high | critical
@@ -108,5 +110,6 @@ Events serialize to JSON for UI consumption. Large evidence blobs truncated in s
 
 ## Changelog
 
+- 2026-06-25 — Added `judgment` finding type and verdict events (#29)
 - 2026-06-25 — Updated finding types and severity for GitHub repo auditing
 - 2026-06-25 — Initial bus design
